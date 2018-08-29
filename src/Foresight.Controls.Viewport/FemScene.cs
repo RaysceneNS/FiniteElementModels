@@ -9,7 +9,6 @@ namespace UI.Controls.Viewport
     public class FemScene : SceneObject
     {
         private readonly Model _model;
-        private PlotMode _plotMode;
         private int _edgeDisplayList, _elementList, _meshList;
         private bool _displayListsCreated;
         private int _loadSymbolList, _constraintSymbolList;
@@ -22,25 +21,17 @@ namespace UI.Controls.Viewport
         public FemScene(Model model, float symbolSize)
             : base()
         {
-            this._plotMode = PlotMode.PerNode;
+            this.PlotMode = PlotMode.PerNode;
             _model = model;
 
             CreateSymbols(symbolSize);
         }
 
-        /// <summary>
-        /// Calculates the entity's bounding box.
-        /// </summary>
-        /// <returns></returns>
         public override AxisAlignedBox3 AxisAlignedBoundingBox()
         {
             return _model.AxisAlignedBoundingBox();
         }
 
-        /// <summary>
-        /// Creates the symbols.
-        /// </summary>
-        /// <param name="scale">The scale.</param>
         private void CreateSymbols(float scale)
         {
             // constraint arrows
@@ -88,9 +79,6 @@ namespace UI.Controls.Viewport
             return AxisAlignedBox2.FromExtents(minX, minY, maxX, maxY);
         }
         
-        /// <summary>
-        /// Draw method for implementors to override
-        /// </summary>
         internal override void Draw()
         {
             Gl.glEnable(Gl.GL_LIGHTING);
@@ -125,11 +113,7 @@ namespace UI.Controls.Viewport
             }
         }
 
-        /// <summary>
-        /// Paint the constraint sybols
-        /// </summary>
-        /// <param name="constraintSymbol">The constraint symbol.</param>
-        private void DrawConstraints(int constraintSymbol)
+        private void DrawConstraints(int constraintSymbolSize)
         {
             foreach (var node in this._model.Nodes)
             {
@@ -142,7 +126,7 @@ namespace UI.Controls.Viewport
                     Gl.glPushMatrix();
                     Gl.glTranslatef(node.X, node.Y, 0f);
                     Gl.glRotatef(90f, 0f, 1f, 0f); //rotate to the X quaternion
-                    Gl.glCallList(constraintSymbol);
+                    Gl.glCallList(constraintSymbolSize);
                     Gl.glPopMatrix();
                 }
 
@@ -151,17 +135,13 @@ namespace UI.Controls.Viewport
                     Gl.glPushMatrix();
                     Gl.glTranslatef(node.X, node.Y, 0f);
                     Gl.glRotatef(270f, 1f, 0f, 0f); //rotate to the Y quaternion
-                    Gl.glCallList(constraintSymbol);
+                    Gl.glCallList(constraintSymbolSize);
                     Gl.glPopMatrix();
                 }
             }
         }
 
-        /// <summary>
-        /// Paint the load symbols
-        /// </summary>
-        /// <param name="loadSymbol">The load symbol.</param>
-        private void DrawLoads(int loadSymbol)
+        private void DrawLoads(int loadSymbolSize)
         {
             foreach (var node in this._model.Nodes)
             {
@@ -174,7 +154,7 @@ namespace UI.Controls.Viewport
                 Gl.glTranslatef(node.X, node.Y, 0f);
                 Gl.glRotatef(vector.AngleOnXy(), 0f, 0f, 1f);
                 Gl.glRotatef(vector.AngleFromXy() + 90f, 0f, -1f, 0f);
-                Gl.glCallList(loadSymbol);
+                Gl.glCallList(loadSymbolSize);
                 Gl.glPopMatrix();
             }
         }
@@ -189,19 +169,12 @@ namespace UI.Controls.Viewport
             }
         }
 
-        /// <summary>
-        /// Draw wireframe
-        /// </summary>
         internal override void DrawWireframe()
         {
             Gl.glColor3ub(0, 0, 0);
             Gl.glCallList(this._meshList);
         }
 
-        /// <summary>
-        /// Releases unmanaged and - optionally - managed resources
-        /// </summary>
-        /// <param name="disposing"><c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only unmanaged resources.</param>
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);
@@ -222,9 +195,6 @@ namespace UI.Controls.Viewport
             }
         }
 
-        /// <summary>
-        /// Compile the entity
-        /// </summary>
         internal override void Compile()
         {
             if (_model.IsSolved)
@@ -240,9 +210,6 @@ namespace UI.Controls.Viewport
             UpdateMeshList();
         }
 
-        /// <summary>
-        /// Updates the element list.
-        /// </summary>
         private void UpdateElementList()
         {
             var ramp = ColorScale.Gradient;
@@ -264,7 +231,7 @@ namespace UI.Controls.Viewport
                 var node3 = this._model.Nodes[element.NodeList[2]];
 
                 Color c;
-                switch (this._plotMode)
+                switch (this.PlotMode)
                 {
                     case PlotMode.PerNode:
                         c = ramp[node1.ColorIndex];
@@ -293,9 +260,6 @@ namespace UI.Controls.Viewport
             Gl.glEndList();
         }
 
-        /// <summary>
-        /// Updates the edge display list.
-        /// </summary>
         private void UpdateEdgeDisplayList()
         {
             // create a lines for the edges
@@ -326,9 +290,6 @@ namespace UI.Controls.Viewport
             Gl.glEndList();
         }
         
-        /// <summary>
-        /// Updates the mesh list.
-        /// </summary>
         private void UpdateMeshList()
         {
             //draw the mesh elements
@@ -353,32 +314,11 @@ namespace UI.Controls.Viewport
             Gl.glEnd();
             Gl.glEndList();
         }
-        
-        /// <summary>
-        /// Gets or sets the plot mode.
-        /// </summary>
-        /// <scalar>The plot mode.</scalar>
-        public PlotMode PlotMode
-        {
-            get
-            {
-                return this._plotMode;
-            }
-            set
-            {
-                this._plotMode = value;
-            }
-        }
+
+        public PlotMode PlotMode { get; set; }
 
         private static class PrimitiveFactory
         {
-            /// <summary>
-            ///     Create a cylinder
-            /// </summary>
-            /// <param name="firstDiameter"></param>
-            /// <param name="secondDiameter"></param>
-            /// <param name="length"></param>
-            /// <param name="elems"></param>
             private static void CreateCylinder(float firstDiameter, float secondDiameter, float length, int elems)
             {
                 var thickness = secondDiameter - firstDiameter;
@@ -406,10 +346,6 @@ namespace UI.Controls.Viewport
                 Gl.glEnd();
             }
 
-            /// <summary>
-            ///     Draw the constraint arrow
-            /// </summary>
-            /// <param name="scale"></param>
             public static void CreateConstraintArrow(float scale)
             {
                 Gl.glPushMatrix();
@@ -419,10 +355,6 @@ namespace UI.Controls.Viewport
                 Gl.glPopMatrix();
             }
 
-            /// <summary>
-            ///     Draw the loading arrow
-            /// </summary>
-            /// <param name="scale"></param>
             public static void CreateLoadArrow(float scale)
             {
                 Gl.glPushMatrix();
@@ -435,12 +367,6 @@ namespace UI.Controls.Viewport
                 Gl.glPopMatrix();
             }
 
-            /// <summary>
-            ///     Create a circular plane
-            /// </summary>
-            /// <param name="insideDiameter"></param>
-            /// <param name="outsideDiameter"></param>
-            /// <param name="elems"></param>
             private static void CreateRing(float insideDiameter, float outsideDiameter, int elems)
             {
                 Gl.glBegin(Gl.GL_QUAD_STRIP);

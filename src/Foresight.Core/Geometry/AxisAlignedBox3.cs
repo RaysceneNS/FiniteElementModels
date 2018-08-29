@@ -3,28 +3,14 @@ using System.Diagnostics;
 
 namespace Core.Geometry
 {
-    [DebuggerDisplay("center={_center} extentX={ExtentX} extentY={ExtentY} extentZ={ExtentZ}")]
+    [DebuggerDisplay("center={Center} extentX={ExtentX} extentY={ExtentY} extentZ={ExtentZ}")]
     public struct AxisAlignedBox3
     {
-        private readonly Point3 _center;
-        private readonly float _extentX;
-        private readonly float _extentY;
-        private readonly float _extentZ;
-
         public static readonly AxisAlignedBox3 Empty = new AxisAlignedBox3();
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="AxisAlignedBox3" /> struct.
-        /// </summary>
-        /// <param name="x">X.</param>
-        /// <param name="y">Y.</param>
-        /// <param name="z">Z.</param>
-        /// <param name="extentX">The extent X.</param>
-        /// <param name="extentY">The extent Y.</param>
-        /// <param name="extentZ">The extent Z.</param>
         public AxisAlignedBox3(float x, float y, float z, float extentX, float extentY, float extentZ)
         {
-            _center = new Point3(x, y, z);
+            Center = new Point3(x, y, z);
 
             if (extentX < 0)
                 throw new ArgumentOutOfRangeException(nameof(extentX), extentX,
@@ -36,21 +22,14 @@ namespace Core.Geometry
                 throw new ArgumentOutOfRangeException(nameof(extentZ), extentZ,
                     "Z extent must be greater than or equal to zero");
 
-            _extentX = extentX;
-            _extentY = extentY;
-            _extentZ = extentZ;
+            ExtentX = extentX;
+            ExtentY = extentY;
+            ExtentZ = extentZ;
         }
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="AxisAlignedBox3" /> struct.
-        /// </summary>
-        /// <param name="center">The center.</param>
-        /// <param name="extentX">The extent X.</param>
-        /// <param name="extentY">The extent Y.</param>
-        /// <param name="extentZ">The extent Z.</param>
         public AxisAlignedBox3(Point3 center, float extentX, float extentY, float extentZ)
         {
-            _center = center;
+            Center = center;
 
             if (extentX < 0)
                 throw new ArgumentOutOfRangeException(nameof(extentX), extentX,
@@ -62,20 +41,14 @@ namespace Core.Geometry
                 throw new ArgumentOutOfRangeException(nameof(extentZ), extentZ,
                     "Z extent must be greater than or equal to zero");
 
-            _extentX = extentX;
-            _extentY = extentY;
-            _extentZ = extentZ;
+            ExtentX = extentX;
+            ExtentY = extentY;
+            ExtentZ = extentZ;
         }
 
         /// <summary>
         ///     Creates a new axis aligned box from the extreme corner points provided
         /// </summary>
-        /// <param name="minX">The min X.</param>
-        /// <param name="minY">The min Y.</param>
-        /// <param name="minZ">The min Z.</param>
-        /// <param name="maxX">The max X.</param>
-        /// <param name="maxY">The max Y.</param>
-        /// <param name="maxZ">The max Z.</param>
         /// <returns></returns>
         public static AxisAlignedBox3 FromExtents(float minX, float minY, float minZ, float maxX, float maxY, float maxZ)
         {
@@ -88,27 +61,14 @@ namespace Core.Geometry
             return new AxisAlignedBox3(center, extentX, extentY, extentZ);
         }
         
-        /// <summary>
-        ///     Returns the hash code for this instance.
-        /// </summary>
-        /// <returns>
-        ///     A 32-bit signed integer that is the hash code for this instance.
-        /// </returns>
         public override int GetHashCode()
         {
-            return _center.GetHashCode() ^
+            return Center.GetHashCode() ^
                    ExtentX.GetHashCode() ^
                    ExtentY.GetHashCode() ^
                    ExtentZ.GetHashCode();
         }
 
-        /// <summary>
-        ///     Indicates whether this instance and a specified object are equal.
-        /// </summary>
-        /// <param name="obj">Another object to compare to.</param>
-        /// <returns>
-        ///     true if obj and this instance are the same type and represent the same value; otherwise, false.
-        /// </returns>
         public override bool Equals(object obj)
         {
             if (!(obj is AxisAlignedBox3))
@@ -216,7 +176,7 @@ namespace Core.Geometry
         /// <returns>The result of the operator.</returns>
         public static bool operator ==(AxisAlignedBox3 left, AxisAlignedBox3 right)
         {
-            return left._center == right._center &&
+            return left.Center == right.Center &&
                    Equals(left.ExtentX, right.ExtentX) &&
                    Equals(left.ExtentY, right.ExtentY) &&
                    Equals(left.ExtentZ, right.ExtentZ);
@@ -239,7 +199,7 @@ namespace Core.Geometry
         /// <value>The maximum.</value>
         public Point3 Maximum
         {
-            get { return new Point3(_center.X + ExtentX, _center.Y + ExtentY, _center.Z + ExtentZ); }
+            get { return new Point3(Center.X + ExtentX, Center.Y + ExtentY, Center.Z + ExtentZ); }
         }
 
         /// <summary>
@@ -248,7 +208,7 @@ namespace Core.Geometry
         /// <value>The minimum.</value>
         public Point3 Minimum
         {
-            get { return new Point3(_center.X - ExtentX, _center.Y - ExtentY, _center.Z - ExtentZ); }
+            get { return new Point3(Center.X - ExtentX, Center.Y - ExtentY, Center.Z - ExtentZ); }
         }
 
         /// <summary>
@@ -264,10 +224,7 @@ namespace Core.Geometry
         ///     Gets or sets the location.
         /// </summary>
         /// <value>The location.</value>
-        public Point3 Center
-        {
-            get { return _center; }
-        }
+        public Point3 Center { get; }
 
         /// <summary>
         ///     Gets the center X coord.
@@ -275,7 +232,7 @@ namespace Core.Geometry
         /// <value>The X.</value>
         public float X
         {
-            get { return _center.X; }
+            get { return Center.X; }
         }
 
         /// <summary>
@@ -284,7 +241,7 @@ namespace Core.Geometry
         /// <value>The Y.</value>
         public float Y
         {
-            get { return _center.Y; }
+            get { return Center.Y; }
         }
 
         /// <summary>
@@ -293,7 +250,7 @@ namespace Core.Geometry
         /// <value>The Z.</value>
         public float Z
         {
-            get { return _center.Z; }
+            get { return Center.Z; }
         }
 
         /// <summary>
@@ -302,7 +259,7 @@ namespace Core.Geometry
         /// <value>The left.</value>
         public float Left
         {
-            get { return _center.X - ExtentX; }
+            get { return Center.X - ExtentX; }
         }
 
         /// <summary>
@@ -311,7 +268,7 @@ namespace Core.Geometry
         /// <value>The right.</value>
         public float Right
         {
-            get { return _center.X + ExtentX; }
+            get { return Center.X + ExtentX; }
         }
 
         /// <summary>
@@ -320,7 +277,7 @@ namespace Core.Geometry
         /// <value>The bottom.</value>
         public float Bottom
         {
-            get { return _center.Y - ExtentY; }
+            get { return Center.Y - ExtentY; }
         }
 
         /// <summary>
@@ -329,7 +286,7 @@ namespace Core.Geometry
         /// <value>The top.</value>
         public float Top
         {
-            get { return _center.Y + ExtentY; }
+            get { return Center.Y + ExtentY; }
         }
 
         /// <summary>
@@ -347,7 +304,7 @@ namespace Core.Geometry
         /// <value>The near.</value>
         public float Back
         {
-            get { return _center.Z - ExtentZ; }
+            get { return Center.Z - ExtentZ; }
         }
 
         /// <summary>
@@ -356,7 +313,7 @@ namespace Core.Geometry
         /// <value>The far.</value>
         public float Front
         {
-            get { return _center.Z + ExtentZ; }
+            get { return Center.Z + ExtentZ; }
         }
 
         /// <summary>
@@ -414,14 +371,14 @@ namespace Core.Geometry
 
                 return new[]
                 {
-                    _center - vecX - vecY - vecZ,
-                    _center + vecX - vecY - vecZ,
-                    _center - vecX + vecY - vecZ,
-                    _center + vecX + vecY - vecZ,
-                    _center - vecX - vecY + vecZ,
-                    _center + vecX - vecY + vecZ,
-                    _center - vecX + vecY + vecZ,
-                    _center + vecX + vecY + vecZ
+                    Center - vecX - vecY - vecZ,
+                    Center + vecX - vecY - vecZ,
+                    Center - vecX + vecY - vecZ,
+                    Center + vecX + vecY - vecZ,
+                    Center - vecX - vecY + vecZ,
+                    Center + vecX - vecY + vecZ,
+                    Center - vecX + vecY + vecZ,
+                    Center + vecX + vecY + vecZ
                 };
             }
         }
@@ -430,28 +387,19 @@ namespace Core.Geometry
         ///     Gets or sets the extent X.
         /// </summary>
         /// <value>The extent X.</value>
-        public float ExtentX
-        {
-            get { return _extentX; }
-        }
+        public float ExtentX { get; }
 
         /// <summary>
         ///     Gets or sets the extent Y.
         /// </summary>
         /// <value>The extent Y.</value>
-        public float ExtentY
-        {
-            get { return _extentY; }
-        }
+        public float ExtentY { get; }
 
         /// <summary>
         ///     Gets or sets the extent Z.
         /// </summary>
         /// <value>The extent Z.</value>
-        public float ExtentZ
-        {
-            get { return _extentZ; }
-        }
+        public float ExtentZ { get; }
 
         /// <summary>
         ///     Gets the extent of this box as the distance measured from it's opposite corners.

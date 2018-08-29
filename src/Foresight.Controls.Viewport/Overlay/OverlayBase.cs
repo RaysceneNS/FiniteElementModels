@@ -98,7 +98,7 @@ namespace UI.Controls.Viewport.Overlay
         /// </param>
         protected virtual void Dispose(bool disposing)
         {
-            _image.Dispose();
+            _image?.Dispose();
         }
     }
 }

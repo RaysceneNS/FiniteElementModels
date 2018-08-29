@@ -19,21 +19,12 @@ namespace UI.Controls.Viewport
         /// </summary>
         internal OrientationIndicator()
         {
-            Visible = true;
+            IsVisible = true;
             _initialized = false;
         }
 
-        /// <summary>
-        ///     Gets or sets a value indicating whether this is visible.
-        /// </summary>
-        /// <value><c>true</c> if visible; otherwise, <c>false</c>.</value>
-        public bool Visible { get; set; }
+        public bool IsVisible { get; set; }
         
-        /// <summary>
-        ///     Draws the indicator on the viewport.
-        /// </summary>
-        /// <param name="quaternion">The quaternion.</param>
-        /// <param name="axes">The axes.</param>
         internal void Draw(Quaternion quaternion, Axes axes)
         {
             const float textDistance = 38f;
@@ -145,9 +136,6 @@ namespace UI.Controls.Viewport
             Gl.glPopAttrib();
         }
 
-        /// <summary>
-        ///     Initializes this instance.
-        /// </summary>
         private void Initialize()
         {
             _quadric = Glu.gluNewQuadric();
@@ -161,9 +149,6 @@ namespace UI.Controls.Viewport
             _initialized = true;
         }
 
-        /// <summary>
-        ///     Creates the arrow display list.
-        /// </summary>
         private void CreateArrow()
         {
             const int sides = 12;
@@ -250,21 +235,11 @@ namespace UI.Controls.Viewport
             Gl.glEndList();
         }
 
-        /// <summary>
-        ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
         public void Dispose()
         {
             Dispose(true);
         }
 
-        /// <summary>
-        ///     Releases unmanaged and - optionally - managed resources
-        /// </summary>
-        /// <param name="disposing">
-        ///     <c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only
-        ///     unmanaged resources.
-        /// </param>
         private void Dispose(bool disposing)
         {
             if (disposing)

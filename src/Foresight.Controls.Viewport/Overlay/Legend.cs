@@ -86,10 +86,6 @@ namespace UI.Controls.Viewport.Overlay
             }
         }
 
-        /// <summary>
-        ///     Creates the Image.
-        /// </summary>
-        /// <returns>the image</returns>
         protected override Bitmap CreateImage()
         {
             const int titleSpacingY = 15;
@@ -183,13 +179,7 @@ namespace UI.Controls.Viewport.Overlay
             return newImage;
         }
 
-        /// <summary>
-        ///     Releases unmanaged and - optionally - managed resources
-        /// </summary>
-        /// <param name="disposing">
-        ///     <c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only
-        ///     unmanaged resources.
-        /// </param>
+        /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);

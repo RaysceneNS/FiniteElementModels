@@ -8,24 +8,13 @@ namespace UI.Controls.Viewport.Overlay
         private Point3 _attachingPoint;
         private Point2 _position;
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="LabelBase" /> class.
-        /// </summary>
-        /// <param name="p">The p.</param>
         internal LabelBase(Point3 p)
         {
             _attachingPoint = p;
         }
 
-        /// <summary>
-        ///     Updates the pos.
-        /// </summary>
         internal void UpdatePosition()
         {
-            double winX;
-            double winY;
-            double winZ;
-
             var modelMatrix = new double[16];
             var projMatrix = new double[16];
             var viewport = new int[4];
@@ -35,7 +24,7 @@ namespace UI.Controls.Viewport.Overlay
             Gl.glGetIntegerv(Gl.GL_VIEWPORT, viewport);
 
             if (Glu.gluProject(_attachingPoint.X, _attachingPoint.Y, _attachingPoint.Z, modelMatrix, projMatrix,
-                    viewport, out winX, out winY, out winZ) == Gl.GL_FALSE)
+                    viewport, out var winX, out var winY, out _) == Gl.GL_FALSE)
                 throw new GLException("Call to gluProject() failed.");
 
             _position = new Point2((float) winX, (float) winY);

@@ -14,9 +14,6 @@ namespace Core.Algorythm
         private readonly List<bool> _reverts;
         private readonly List<object> _orderedEntities;
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="LoopBuilder" /> class.
-        /// </summary>
         public LoopBuilder()
         {
             _reverts = new List<bool>();
@@ -24,7 +21,7 @@ namespace Core.Algorythm
         }
 
         /// <summary>
-        ///     Return the area of the supplied points
+        /// Return the area of the supplied points
         /// </summary>
         /// <param name="points">The points.</param>
         /// <returns></returns>
@@ -45,26 +42,18 @@ namespace Core.Algorythm
             return area;
         }
 
-        /// <summary>
-        ///     Adds the primitive.
-        /// </summary>
-        public void AddLineSegment (float x1, float y1, float x2, float y2)
+        public LoopBuilder AddLineSegment(float x1, float y1, float x2, float y2)
         {
             AddEntity(new LineSegment2(x1, y1, x2, y2));
+            return this;
         }
 
-        /// <summary>
-        ///     Adds the primitive.
-        /// </summary>
-        public void AddArc(float xCenter, float yCenter, float radius, float startAngle, float endAngle)
+        public LoopBuilder AddArc(float xCenter, float yCenter, float radius, float startAngle, float endAngle)
         {
             AddEntity(new Arc2(xCenter, yCenter, radius, startAngle, endAngle));
+            return this;
         }
 
-        /// <summary>
-        ///     Adds the entity.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
         private void AddEntity(object entity)
         {
             if (_orderedEntities.Count == 0)
@@ -100,45 +89,35 @@ namespace Core.Algorythm
             }
         }
 
-        /// <summary>
-        /// Gets the start point.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
         private static Point2 GetStartPoint(object entity)
         {
             var entityType = entity.GetType();
 
             if (entityType == typeof(LineSegment2))
             {
-                var line = (LineSegment2) entity;
+                var line = (LineSegment2)entity;
                 return line.Vertex1;
             }
             if (entityType == typeof(Arc2))
             {
-                var arc = (Arc2) entity;
+                var arc = (Arc2)entity;
                 return arc.Start;
             }
             return new Point2();
         }
 
-        /// <summary>
-        ///     Gets the end point.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <returns></returns>
         private static Point2 GetEndPoint(object entity)
         {
             var entityType = entity.GetType();
 
             if (entityType == typeof(LineSegment2))
             {
-                var line = (LineSegment2) entity;
+                var line = (LineSegment2)entity;
                 return line.Vertex2;
             }
             if (entityType == typeof(Arc2))
             {
-                var arc = (Arc2) entity;
+                var arc = (Arc2)entity;
                 return arc.End;
             }
             return new Point2();
@@ -158,9 +137,9 @@ namespace Core.Algorythm
             {
                 var entity = _orderedEntities[i];
                 if (entity is LineSegment2)
-                    points.AddRange(GetPoints((LineSegment2) entity, maxDistance, _reverts[i]));
+                    points.AddRange(GetPoints((LineSegment2)entity, maxDistance, _reverts[i]));
                 if (entity is Arc2)
-                    points.AddRange(GetPoints((Arc2) entity, maxDistance, _reverts[i]));
+                    points.AddRange(GetPoints((Arc2)entity, maxDistance, _reverts[i]));
             }
             //close the shape
             points.Add(points[0]);
@@ -173,16 +152,9 @@ namespace Core.Algorythm
             return points.ToArray();
         }
 
-        /// <summary>
-        ///     Gets the points.
-        /// </summary>
-        /// <param name="entity">The entity.</param>
-        /// <param name="elementSize">Size of the element.</param>
-        /// <param name="revert">if set to <c>true</c> [revert].</param>
-        /// <returns></returns>
         private static IEnumerable<Point2> GetPoints(LineSegment2 entity, float elementSize, bool revert)
         {
-            var numElements = (int) Math.Ceiling(entity.Length / elementSize);
+            var numElements = (int)Math.Ceiling(entity.Length / elementSize);
             var points = new Point2[numElements];
             var start = entity.Vertex1;
             var end = entity.Vertex2;
@@ -191,7 +163,7 @@ namespace Core.Algorythm
             {
                 for (var i = numElements; i > 0; i--)
                 {
-                    points[numElements - i] = new Point2(start.X + i * (end.X - start.X) / numElements, 
+                    points[numElements - i] = new Point2(start.X + i * (end.X - start.X) / numElements,
                                                          start.Y + i * (end.Y - start.Y) / numElements);
                 }
             }
@@ -206,32 +178,17 @@ namespace Core.Algorythm
             return points;
         }
 
-        /// <summary>
-        ///     Gets the points.
-        /// </summary>
-        /// <param name="arc">The arc.</param>
-        /// <param name="elementSize">Size of the element.</param>
-        /// <param name="revert">if set to <c>true</c> [revert].</param>
-        /// <returns></returns>
         private static IEnumerable<Point2> GetPoints(Arc2 arc, float elementSize, bool revert)
         {
             return arc.GetPoints(elementSize, revert);
         }
-        
+
         private struct Arc2
         {
             private readonly float _endAngle, _startAngle;
             private Matrix4X4 _matrix;
             private readonly float _radius;
 
-            /// <summary>
-            /// Create an arc
-            /// </summary>
-            /// <param name="xCenter">The x center.</param>
-            /// <param name="yCenter">The y center.</param>
-            /// <param name="radius">The radius.</param>
-            /// <param name="startAngle">The start angle.</param>
-            /// <param name="endAngle">The end angle.</param>
             public Arc2(float xCenter, float yCenter, float radius, float startAngle, float endAngle)
             {
                 _radius = radius;
@@ -239,10 +196,7 @@ namespace Core.Algorythm
                 _endAngle = endAngle;
                 _matrix = Matrix4X4.CreateTranslation(xCenter, yCenter, 0);
             }
-            
-            /// <summary>
-            ///     Returnt he end point for this arc
-            /// </summary>
+
             public Point2 End
             {
                 get
@@ -264,10 +218,7 @@ namespace Core.Algorythm
                     angle = 360f - _startAngle + _endAngle;
                 return angle;
             }
-            
-            /// <summary>
-            ///     Return the start point
-            /// </summary>
+
             public Point2 Start
             {
                 get
@@ -278,19 +229,13 @@ namespace Core.Algorythm
                 }
             }
 
-            /// <summary>
-            /// Gets the points.
-            /// </summary>
-            /// <param name="elementSize">Size of the element.</param>
-            /// <param name="reverse">if set to <c>true</c> [reverse].</param>
-            /// <returns></returns>
             public Point2[] GetPoints(float elementSize, bool reverse)
             {
                 var radStartAngle = Degrees.ToRadians(_startAngle);
                 var radAngle = Degrees.ToRadians(DeltaAngle());
                 var arcLength = _radius * radAngle;
                 var elements = (int)Math.Ceiling(Math.Abs(arcLength) / elementSize);
-                var center = (Point2) _matrix.ExtractPosition();
+                var center = (Point2)_matrix.ExtractPosition();
 
                 var points = new Point2[elements];
                 if (reverse)
@@ -327,46 +272,19 @@ namespace Core.Algorythm
 
         private struct LineSegment2
         {
-            private readonly Point2 _vertex1, _vertex2;
-            
-            /// <summary>
-            ///     Initializes a new instance of the <see cref="LineSegment2" /> struct.
-            /// </summary>
-            /// <param name="x1">The x1.</param>
-            /// <param name="y1">The y1.</param>
-            /// <param name="x2">The x2.</param>
-            /// <param name="y2">The y2.</param>
             public LineSegment2(float x1, float y1, float x2, float y2)
             {
-                _vertex1 = new Point2(x1, y1);
-                _vertex2 = new Point2(x2, y2);
-            }
-            
-            /// <summary>
-            ///     Gets the vertex1.
-            /// </summary>
-            /// <value>The vertex1.</value>
-            public Point2 Vertex1
-            {
-                get { return _vertex1; }
+                Vertex1 = new Point2(x1, y1);
+                Vertex2 = new Point2(x2, y2);
             }
 
-            /// <summary>
-            ///     Gets the vertex2.
-            /// </summary>
-            /// <value>The vertex2.</value>
-            public Point2 Vertex2
-            {
-                get { return _vertex2; }
-            }
+            public Point2 Vertex1 { get; }
 
-            /// <summary>
-            ///     Gets the length.
-            /// </summary>
-            /// <value>The length.</value>
+            public Point2 Vertex2 { get; }
+
             public float Length
             {
-                get { return Point2.Distance(_vertex1, _vertex2); }
+                get { return Point2.Distance(Vertex1, Vertex2); }
             }
         }
     }

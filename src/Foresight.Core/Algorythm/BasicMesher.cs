@@ -1,16 +1,23 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Core.Fem;
 using Core.Geometry;
 
 namespace Core.Algorythm
 {
     /// <summary>
-    ///     Provides iterative meshing
+    /// Provides iterative meshing
     /// </summary>
-    public class BasicMesher : DelaunayTriangulation
+    public class BasicMesher
     {
+        private const double EPSILON = 1E-06;
+        private readonly LinkedList<TriangleFace> _faces = new LinkedList<TriangleFace>();
+        private readonly List<Point2> _improvement = new List<Point2>();
+        private readonly List<List<Point2>> _loops = new List<List<Point2>>();
+        private readonly List<Point2> _vertices = new List<Point2>();
+
         /// <summary>
         /// Creates the mesher object to perform iterative meshing of a surface
         /// </summary>
@@ -21,6 +28,315 @@ namespace Core.Algorythm
             ElementSize = elementSize;
             SmoothingPasses = smoothingPasses;
             SmoothingMode = SmoothingMode.Area;
+        }
+
+        private void TriangulateInternal()
+        {
+            LinkedListNode<TriangleFace> first;
+            LinkedListNode<TriangleFace> next;
+
+            // clear the mesh
+            _vertices.Clear();
+            _faces.Clear();
+
+            // add all the data from the loops
+            foreach (var current in _loops)
+            {
+                if (current.Count > 0)
+                {
+                    var pointList = current.GetRange(0, current.Count - 1);
+                    _vertices.AddRange(pointList);
+                }
+            }
+
+            // add all the data from the improvement lines
+            foreach (var tf in _improvement)
+            {
+                _vertices.Add(tf);
+            }
+
+            var verticeCount = _vertices.Count - 1;
+            var minXValue = float.MaxValue;
+            var maxXValue = float.MinValue;
+            var minYValue = float.MaxValue;
+            var maxYValue = float.MinValue;
+
+            foreach (var p in _vertices)
+            {
+                if (p.X < minXValue)
+                    minXValue = p.X;
+
+                if (p.X > maxXValue)
+                    maxXValue = p.X;
+
+                if (p.Y < minYValue)
+                    minYValue = p.Y;
+
+                if (p.Y > maxYValue)
+                    maxYValue = p.Y;
+            }
+
+            var xRange = maxXValue - minXValue;
+            var yRange = maxYValue - minYValue;
+            var largerRange = xRange <= yRange ? yRange : xRange;
+
+            var midXValue = (maxXValue + minXValue) / 2f;
+            var midYValue = (maxYValue + minYValue) / 2f;
+
+            _vertices.Add(new Point2(midXValue - 2f * largerRange, midYValue - largerRange));
+            _vertices.Add(new Point2(midXValue, midYValue + 2f * largerRange));
+            _vertices.Add(new Point2(midXValue + 2f * largerRange, midYValue - largerRange));
+            _faces.AddLast(new TriangleFace(verticeCount + 1, verticeCount + 2, verticeCount + 3));
+            var edges = new LinkedList<TriangleEdge>();
+
+            var index = 0;
+            while (index < _vertices.Count && index <= verticeCount)
+            {
+                edges.Clear();
+                first = _faces.First;
+                do
+                {
+                    var face = first.Value;
+
+                    next = first.Next;
+                    var flag = InCircle(_vertices[index], _vertices[face.v1], _vertices[face.v2], _vertices[face.v3]);
+                    if (flag)
+                    {
+                        var node3 = edges.Find(new TriangleEdge(face.v2, face.v1));
+                        if (node3 == null)
+                            edges.AddLast(new TriangleEdge(face.v1, face.v2));
+                        else
+                            edges.Remove(node3);
+                        node3 = edges.Find(new TriangleEdge(face.v3, face.v2));
+
+                        if (node3 == null)
+                            edges.AddLast(new TriangleEdge(face.v2, face.v3));
+                        else
+                            edges.Remove(node3);
+
+                        node3 = edges.Find(new TriangleEdge(face.v1, face.v3));
+                        if (node3 == null)
+                            edges.AddLast(new TriangleEdge(face.v3, face.v1));
+                        else
+                            edges.Remove(node3);
+
+                        _faces.Remove(first);
+                    }
+                    first = next;
+                } while (first != null);
+
+                var edgeNode = edges.First;
+                while (edgeNode != null)
+                {
+                    var edge = edgeNode.Value;
+                    _faces.AddLast(new TriangleFace(edge.v1, edge.v2, index));
+                    edgeNode = edgeNode.Next;
+                }
+                index++;
+            }
+
+            // remove any faces where v1, v2 or v3 exceeed verticecount
+            first = _faces.First;
+            do
+            {
+                var face = first.Value;
+                next = first.Next;
+                if (face.v1 > verticeCount || face.v2 > verticeCount || face.v3 > verticeCount)
+                    _faces.Remove(first);
+
+                first = next;
+            }
+            while (first != null);
+
+
+            _vertices.RemoveRange(_vertices.Count - 3, 3);
+            if (_faces.Count > 0 && _loops.Count > 0)
+            {
+                first = _faces.First;
+                while (first != null)
+                {
+                    var face = first.Value;
+                    first = first.Next;
+
+                    var v1 = face.v1;
+                    var v2 = face.v2;
+                    var v3 = face.v3;
+
+                    var p1 = _vertices[v1];
+                    var p1X = p1.X;
+                    var p1Y = p1.Y;
+
+                    var p2 = _vertices[v2];
+                    var p2X = p2.X;
+                    var p2Y = p2.Y;
+
+                    var p3 = _vertices[v3];
+                    var p3X = p3.X;
+                    var p3Y = p3.Y;
+
+                    var newPoint = new Point2((p1X + p2X + p3X) / 3f, (p1Y + p2Y + p3Y) / 3f);
+                    if (!InsidePolygons(newPoint, _loops))
+                        _faces.Remove(face);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Return TRUE if the point (xp,yp) lies inside the circumcircle
+        ///     made up by points (x1,y1) (x2,y2) (x3,y3)
+        ///     NOTE: a point enabled the edge1 is inside the circumcircle
+        /// </summary>
+        private static bool InCircle(Point2 vertex, Point2 p1, Point2 p2, Point2 p3)
+        {
+            double m1;
+            double m2;
+            double mx1;
+            double mx2;
+            double my1;
+            double my2;
+            double xc;
+            double yc;
+
+            if (Math.Abs(p1.Y - p2.Y) < EPSILON && Math.Abs(p2.Y - p3.Y) < EPSILON)
+                return false;
+
+            if (Math.Abs(p2.Y - p1.Y) < EPSILON)
+            {
+                m2 = -(p3.X - p2.X) / (p3.Y - p2.Y);
+                mx2 = (p2.X + p3.X) / 2f;
+                my2 = (p2.Y + p3.Y) / 2f;
+                xc = (p2.X + p1.X) / 2f;
+                yc = m2 * (xc - mx2) + my2;
+            }
+            else if (Math.Abs(p3.Y - p2.Y) < EPSILON)
+            {
+                m1 = -(p2.X - p1.X) / (p2.Y - p1.Y);
+                mx1 = (p1.X + p2.X) / 2f;
+                my1 = (p1.Y + p2.Y) / 2f;
+                xc = (p3.X + p2.X) / 2f;
+                yc = m1 * (xc - mx1) + my1;
+            }
+            else
+            {
+                m1 = -(p2.X - p1.X) / (p2.Y - p1.Y);
+                m2 = -(p3.X - p2.X) / (p3.Y - p2.Y);
+                mx1 = (p1.X + p2.X) / 2f;
+                mx2 = (p2.X + p3.X) / 2f;
+                my1 = (p1.Y + p2.Y) / 2f;
+                my2 = (p2.Y + p3.Y) / 2f;
+                xc = (m1 * mx1 - m2 * mx2 + my2 - my1) / (m1 - m2);
+                yc = m1 * (xc - mx1) + my1;
+            }
+
+            var dx = p2.X - xc;
+            var dy = p2.Y - yc;
+            var rsqr = dx * dx + dy * dy;
+
+            dx = vertex.X - xc;
+            dy = vertex.Y - yc;
+            var drsqr = dx * dx + dy * dy;
+
+            return !(drsqr > rsqr);
+        }
+
+        /// <summary>
+        /// tests each point in the lines of lists of points to see if point is within
+        /// </summary>
+        private static bool InsidePolygons(Point2 p, IEnumerable<List<Point2>> pointList)
+        {
+            // must test every polygon to see if all inside polygon calls add to one.
+            var count = 0;
+            foreach (var list in pointList)
+            {
+                count += InsidePolygon(p, list);
+            }
+            return count == 1;
+        }
+
+        /// <summary>
+        /// Test the number of times a ray project from the test point crosses the edges that form the polygon
+        /// Assumes that the polygon is closed
+        /// </summary>
+        /// <param name="pTest">The p test.</param>
+        /// <param name="polygon">The polygon.</param>
+        /// <returns></returns>
+        private static int InsidePolygon(Point2 pTest, List<Point2> polygon)
+        {
+            if (polygon == null)
+                throw new ArgumentNullException(nameof(polygon));
+
+            var num = 0;
+            for (var i = 0; i < polygon.Count - 1; i++)
+            {
+                var p1 = polygon[i];
+                var p2 = polygon[i + 1];
+
+                if (p1.Y > pTest.Y) // a downward crossing
+                {
+                    if (p2.Y <= pTest.Y && (p2.X - p1.X) * (pTest.Y - p1.Y) - (pTest.X - p1.X) * (p2.Y - p1.Y) <= 0f)
+                        num--;
+                }
+                else // p1.Y <= pTest.Y
+                {
+                    if (p2.Y > pTest.Y && (p2.X - p1.X) * (pTest.Y - p1.Y) - (pTest.X - p1.X) * (p2.Y - p1.Y) >= 0f)
+                        num++;
+                }
+            }
+            return num;
+        }
+
+        private static float SqrDistance(Point2 a, Point2 b)
+        {
+            var dx = b.X - a.X;
+            var dy = b.Y - a.Y;
+            return dx * dx + dy * dy;
+        }
+
+        public BasicMesher AddLoop(IEnumerable<Point2> loop)
+        {
+            _loops.Add(new List<Point2>(loop));
+            return this;
+        }
+        
+        [StructLayout(LayoutKind.Sequential)]
+        private struct TriangleFace
+        {
+            internal readonly int v1;
+            internal readonly int v2;
+            internal readonly int v3;
+
+            internal TriangleFace(int v1, int v2, int v3)
+            {
+                this.v1 = v1;
+                this.v2 = v2;
+                this.v3 = v3;
+            }
+
+            public float DetermineArea(IReadOnlyList<Point2> points)
+            {
+                var a = points[v1];
+                var b = points[v2];
+                var c = points[v3];
+
+                var len1 = (float)Math.Sqrt(SqrDistance(a, b));
+                var len2 = (float)Math.Sqrt(SqrDistance(b, c));
+                var len3 = (float)Math.Sqrt(SqrDistance(c, a));
+
+                return (len2 + len3 - len1) * (len3 + len1 - len2) * (len1 + len2 - len3) / (len1 * len2 * len3);
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct TriangleEdge
+        {
+            internal readonly int v1;
+            internal readonly int v2;
+
+            internal TriangleEdge(int v1, int v2)
+            {
+                this.v1 = v1;
+                this.v2 = v2;
+            }
         }
 
         /// <summary>
@@ -40,7 +356,7 @@ namespace Core.Algorythm
         /// </summary>
         /// <value>The min element quality.</value>
         public double MinElementQuality { get; private set; }
-        
+
         /// <summary>
         ///     Gets the size of the element.
         /// </summary>
@@ -71,16 +387,16 @@ namespace Core.Algorythm
             var lines = new LinkedList<MeshLine>();
             var lastPercent = 0;
 
-            for (var i = firstVerticeIndex; i < Vertices.Count; i++)
+            for (var i = firstVerticeIndex; i < _vertices.Count; i++)
             {
                 // determine the edges of this mesh
                 lines.Clear();
-                var first = Faces.First;
+                var first = _faces.First;
                 while (first != null)
                 {
                     var face = first.Value;
                     var next = first.Next;
-                    var flag = InCircle(Vertices[i], Vertices[face.v1], Vertices[face.v2], Vertices[face.v3]);
+                    var flag = InCircle(_vertices[i], _vertices[face.v1], _vertices[face.v2], _vertices[face.v3]);
 
                     if (flag)
                     {
@@ -102,7 +418,7 @@ namespace Core.Algorythm
                         else
                             lines.AddLast(new MeshLine(face.v3, face.v1));
 
-                        Faces.Remove(first);
+                        _faces.Remove(first);
                     }
                     first = next;
                 }
@@ -112,16 +428,16 @@ namespace Core.Algorythm
                 while (firstNode != null)
                 {
                     var meshNode = firstNode.Value;
-                    Faces.AddLast(new TriangleFace(meshNode.V1, meshNode.V2, i));
+                    _faces.AddLast(new TriangleFace(meshNode.V1, meshNode.V2, i));
                     firstNode = firstNode.Next;
                 }
 
                 //report progress of this iteration
-                var percentProgress = (int)(100f * (i - firstVerticeIndex) / (Vertices.Count - firstVerticeIndex));
+                var percentProgress = (int)(100f * (i - firstVerticeIndex) / (_vertices.Count - firstVerticeIndex));
                 if (percentProgress > lastPercent)
                 {
                     lastPercent = percentProgress;
-                    progressReport.Report(new TaskProgress{ProgressPercentage = percentProgress,Text = ("Meshing / Iteration " + iteration + " " + percentProgress + "%...") });
+                    progressReport.Report(new TaskProgress { ProgressPercentage = percentProgress, Text = ("Meshing / Iteration " + iteration + " " + percentProgress + "%...") });
                 }
 
                 //cancel if required...
@@ -147,11 +463,11 @@ namespace Core.Algorythm
             TriangulateInternal();
 
             // can'transform continue if no faces
-            if (Faces.First == null)
+            if (_faces.First == null)
                 return null;
 
             var lines = new List<MeshLine>();
-            Improvement.Capacity = 10000;
+            _improvement.Capacity = 10000;
 
             const float improveFactor = 0.86f;
 
@@ -160,7 +476,7 @@ namespace Core.Algorythm
             do
             {
                 lines.Clear();
-                var first = Faces.First;
+                var first = _faces.First;
                 while (first != null)
                 {
                     var face = first.Value;
@@ -169,9 +485,9 @@ namespace Core.Algorythm
                     var v2 = face.v2;
                     var v3 = face.v3;
 
-                    var meshLine1 = new MeshLine(v1, v2, Vertices);
-                    var meshLine2 = new MeshLine(v2, v3, Vertices);
-                    var meshLine3 = new MeshLine(v3, v1, Vertices);
+                    var meshLine1 = new MeshLine(v1, v2, _vertices);
+                    var meshLine2 = new MeshLine(v2, v3, _vertices);
+                    var meshLine3 = new MeshLine(v3, v1, _vertices);
 
                     if (meshLine1.SqrLength > elementSizeSquared && !lines.Contains(meshLine1))
                         lines.Add(meshLine1);
@@ -192,16 +508,16 @@ namespace Core.Algorythm
                     foreach (var meshLine in lines)
                     {
                         // see if this line can be broken down into smaller elements
-                        var points = meshLine.CreatePointsAlongLine(ElementSize, Vertices);
+                        var points = meshLine.CreatePointsAlongLine(ElementSize, _vertices);
 
                         //test every hypothetical point generated along the line to see if it is a viable improvement 
                         foreach (var t in points)
                         {
-                            var length = TestImprovement(ElementSize, t, Vertices[meshLine.V1],
-                                Vertices[meshLine.V2]);
+                            var length = TestImprovement(ElementSize, t, _vertices[meshLine.V1],
+                                _vertices[meshLine.V2]);
                             if (length > ElementSize * improveFactor)
                             {
-                                Improvement.Add(t);
+                                _improvement.Add(t);
                                 numImprovements++;
                             }
                         }
@@ -209,9 +525,9 @@ namespace Core.Algorythm
                 }
 
                 // add the improvements to the mesh now
-                var verticeCount = Vertices.Count;
-                Vertices.AddRange(Improvement);
-                Improvement.Clear();
+                var verticeCount = _vertices.Count;
+                _vertices.AddRange(_improvement);
+                _improvement.Clear();
 
                 // iterate over this mesh to join the vertices up based on delauny triangulation
                 if (!IterateMesh(verticeCount, iteration + 1, progressReport))
@@ -227,17 +543,17 @@ namespace Core.Algorythm
             {
                 var lastProgress = 0;
 
-                var loopPointsCount = Loops.Sum(points => points.Count);
+                var loopPointsCount = _loops.Sum(points => points.Count);
 
                 for (var smoothingIteration = 0; smoothingIteration < SmoothingPasses; smoothingIteration++)
                 {
-                    for (var i = loopPointsCount; i < Vertices.Count; i++)
+                    for (var i = loopPointsCount; i < _vertices.Count; i++)
                     {
                         float x = 0;
                         float y = 0;
                         float factor = 0;
 
-                        var triangleNode = Faces.First;
+                        var triangleNode = _faces.First;
                         while (triangleNode != null)
                         {
                             var face = triangleNode.Value;
@@ -247,9 +563,9 @@ namespace Core.Algorythm
 
                             if (v1 == i || v2 == i || v3 == i)
                             {
-                                var p1 = Vertices[v1];
-                                var p2 = Vertices[v2];
-                                var p3 = Vertices[v3];
+                                var p1 = _vertices[v1];
+                                var p2 = _vertices[v2];
+                                var p3 = _vertices[v3];
 
                                 switch (SmoothingMode)
                                 {
@@ -302,15 +618,15 @@ namespace Core.Algorythm
                         }
 
                         // add the vertice 
-                        Vertices[i] = new Point2(x / factor, y / factor);
+                        _vertices[i] = new Point2(x / factor, y / factor);
 
                         // report progress to date
-                        var progress = (int)(100f * (i - loopPointsCount) / (Vertices.Count - loopPointsCount));
+                        var progress = (int)(100f * (i - loopPointsCount) / (_vertices.Count - loopPointsCount));
                         if (progress > lastProgress)
                         {
                             lastProgress = progress;
 
-                            progressReport.Report(new TaskProgress{ProgressPercentage = progress, Text = "Smoothing / Iteration " + (smoothingIteration + 1) + " ..." });
+                            progressReport.Report(new TaskProgress { ProgressPercentage = progress, Text = "Smoothing / Iteration " + (smoothingIteration + 1) + " ..." });
                         }
 
                         //if (worker.CancellationPending)
@@ -321,9 +637,9 @@ namespace Core.Algorythm
                     }
                 }
             }
-            
+
             CalculateQuality();
-            
+
             //now returns model
             return BuildModel();
         }
@@ -346,15 +662,15 @@ namespace Core.Algorythm
 
         private Model BuildModel()
         {
-            var mesh = new Model(Vertices.Count, Faces.Count);
-            foreach (var tf in this.Vertices)
+            var mesh = new Model(_vertices.Count, _faces.Count);
+            foreach (var tf in this._vertices)
             {
                 mesh.AddNode(new Node(tf.X, tf.Y));
             }
-            if (this.Faces.First == null)
+            if (this._faces.First == null)
                 return mesh;
 
-            var firstFace = Faces.First;
+            var firstFace = _faces.First;
             while (firstFace != null)
             {
                 var triangleFace = firstFace.Value;
@@ -371,7 +687,7 @@ namespace Core.Algorythm
             MaxEdgeLength = float.MinValue;
             MinElementQuality = float.MaxValue;
 
-            var triangleNode = Faces.First;
+            var triangleNode = _faces.First;
             while (triangleNode != null)
             {
                 var face = triangleNode.Value;
@@ -379,9 +695,9 @@ namespace Core.Algorythm
                 var v2 = face.v2;
                 var v3 = face.v3;
 
-                var p1 = Vertices[v1];
-                var p2 = Vertices[v2];
-                var p3 = Vertices[v3];
+                var p1 = _vertices[v1];
+                var p2 = _vertices[v2];
+                var p3 = _vertices[v3];
 
                 var dist12 = SqrDistance(p1, p2);
                 var dist23 = SqrDistance(p2, p3);
@@ -405,29 +721,21 @@ namespace Core.Algorythm
                 if (dist31 > MaxEdgeLength)
                     MaxEdgeLength = dist31;
 
-                var area = face.DetermineArea(Vertices);
+                var area = face.DetermineArea(_vertices);
                 if (area < MinElementQuality)
                     MinElementQuality = area;
 
                 triangleNode = triangleNode.Next;
             }
         }
-
-        /// <summary>
-        ///     Tests the improvement.
-        /// </summary>
-        /// <param name="elementSize">Size of the element.</param>
-        /// <param name="pTest">The p test.</param>
-        /// <param name="pStart">The p start.</param>
-        /// <param name="pEnd">The p end.</param>
-        /// <returns></returns>
+        
         private double TestImprovement(float elementSize, Point2 pTest, Point2 pStart, Point2 pEnd)
         {
             Point2 point;
             float distance;
             var minDistance = float.MaxValue;
 
-            foreach (var list in Loops)
+            foreach (var list in _loops)
             {
                 using (var enumerator = list.GetEnumerator())
                 {
@@ -444,7 +752,7 @@ namespace Core.Algorythm
                 }
             }
 
-            using (var enumerator = Improvement.GetEnumerator())
+            using (var enumerator = _improvement.GetEnumerator())
             {
                 while (enumerator.MoveNext())
                 {
@@ -465,11 +773,6 @@ namespace Core.Algorythm
         {
             private readonly float _sqrLength;
 
-            /// <summary>
-            ///     Initializes a new instance of the <see cref="MeshLine" /> class.
-            /// </summary>
-            /// <param name="v1">The v1.</param>
-            /// <param name="v2">The v2.</param>
             public MeshLine(int v1, int v2)
             {
                 _sqrLength = -1f;
@@ -477,12 +780,6 @@ namespace Core.Algorythm
                 V2 = v2;
             }
 
-            /// <summary>
-            ///     Initializes a new instance of the <see cref="MeshLine" /> class.
-            /// </summary>
-            /// <param name="v1">The v1.</param>
-            /// <param name="v2">The v2.</param>
-            /// <param name="vertices">The vertices.</param>
             public MeshLine(int v1, int v2, IReadOnlyList<Point2> vertices)
             {
                 V1 = v1;
@@ -490,62 +787,26 @@ namespace Core.Algorythm
                 _sqrLength = SqrDistance(vertices[v1], vertices[v2]);
             }
 
-            /// <summary>
-            ///     Gets the length of the SQR.
-            /// </summary>
-            /// <value>The length of the SQR.</value>
             public double SqrLength
             {
                 get { return _sqrLength; }
             }
 
-            /// <summary>
-            ///     Gets the v1.
-            /// </summary>
-            /// <value>The v1.</value>
             public int V1 { get; }
-
-            /// <summary>
-            ///     Gets the v2.
-            /// </summary>
-            /// <value>The v2.</value>
             public int V2 { get; }
 
-            /// <summary>
-            ///     Determines whether the specified <see cref="System.Object" /> is equal to this instance.
-            /// </summary>
-            /// <param name="obj">The <see cref="System.Object" /> to compare with this instance.</param>
-            /// <returns>
-            ///     <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
-            /// </returns>
-            /// <exception cref="T:System.NullReferenceException">
-            ///     The <paramref name="obj" /> parameter is null.
-            /// </exception>
             public override bool Equals(object obj)
             {
-                var node = obj as MeshLine;
-                if (node == null)
+                if (!(obj is MeshLine node))
                     return false;
                 return V1 == node.V1 && V2 == node.V2 || V1 == node.V2 && V2 == node.V1;
             }
 
-            /// <summary>
-            ///     Returns a hash code for this instance.
-            /// </summary>
-            /// <returns>
-            ///     A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.
-            /// </returns>
             public override int GetHashCode()
             {
                 return V1 ^ V2;
             }
 
-            /// <summary>
-            ///     Creates the points along line.
-            /// </summary>
-            /// <param name="unitLength">Length of the unit.</param>
-            /// <param name="points">The points.</param>
-            /// <returns></returns>
             public Point2[] CreatePointsAlongLine(double unitLength, IReadOnlyList<Point2> points)
             {
                 var p1 = points[V1];
@@ -561,12 +822,6 @@ namespace Core.Algorythm
                 return p;
             }
 
-            /// <summary>
-            ///     Returns a <see cref="System.String" /> that represents this instance.
-            /// </summary>
-            /// <returns>
-            ///     A <see cref="System.String" /> that represents this instance.
-            /// </returns>
             public override string ToString()
             {
                 return string.Concat("v1:", V1, " v2:", V2, " len:", _sqrLength);
@@ -579,7 +834,6 @@ namespace Core.Algorythm
         public int ProgressPercentage { get; set; }
         public string Text { get; set; }
     }
-
 
     public enum SmoothingMode
     {

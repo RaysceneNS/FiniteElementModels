@@ -4,9 +4,6 @@ using Tao.OpenGl;
 
 namespace UI.Controls.Viewport
 {
-    /// <summary>
-    ///     represents a light in open gl
-    /// </summary>
     internal class Light
     {
         private readonly float _ambientLevel;
@@ -69,12 +66,6 @@ namespace UI.Controls.Viewport
             Gl.glDisable(_lightIndex);
         }
 
-        /// <summary>
-        ///     Returns a <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
-        /// </summary>
-        /// <returns>
-        ///     A <see cref="T:System.String"></see> that represents the current <see cref="T:System.Object"></see>.
-        /// </returns>
         public override string ToString()
         {
             return $"{_position} diff:{_diffuseLevel} ambi:{_ambientLevel} spec:{_specularLevel}";

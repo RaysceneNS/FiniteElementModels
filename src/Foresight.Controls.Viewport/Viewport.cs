@@ -69,7 +69,7 @@ namespace UI.Controls.Viewport
 
             _orientationIndicator = new OrientationIndicator
             {
-                Visible = false
+                IsVisible = false
             };
 
             // enter any custom configuration for the current context
@@ -274,8 +274,8 @@ namespace UI.Controls.Viewport
         /// <value>The orientation indicator.</value>
         public bool OrientationIndicatorVisible
         {
-            get { return _orientationIndicator.Visible; }
-            set { _orientationIndicator.Visible = value; }
+            get { return _orientationIndicator.IsVisible; }
+            set { _orientationIndicator.IsVisible = value; }
         }
 
         /// <summary>
@@ -399,7 +399,7 @@ namespace UI.Controls.Viewport
                 Gl.glLoadIdentity();
 
                 //paint the orientation arrow widget
-                if (_orientationIndicator.Visible)
+                if (_orientationIndicator.IsVisible)
                 {
                     _orientationIndicator.Draw(_camera.Orientation, _camera.DegreesOfFreedom);
                 }

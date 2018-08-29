@@ -113,31 +113,18 @@ namespace UI.Controls.Viewport
         /// <value>The RenderingContext.</value>
         internal IntPtr RenderingContext { get; private set; }
         
-        /// <summary>
-        ///     Make a call to cleanup the gl context when this object is disposed
-        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        /// <summary>
-        ///     Disposable types should implement finalizers
-        /// </summary>
         ~GLContext()
         {
             // Finalizer calls Dispose(false)
             Dispose(false);
         }
 
-        /// <summary>
-        ///     Perform cleanup of our resources
-        /// </summary>
-        /// <param name="disposing">
-        ///     <c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only
-        ///     unmanaged resources.
-        /// </param>
         private void Dispose(bool disposing)
         {
             if (!_disposed)
@@ -148,9 +135,6 @@ namespace UI.Controls.Viewport
             }
         }
 
-        /// <summary>
-        ///     Cleanup the opengl context
-        /// </summary>
         private void DestroyContexts()
         {
             if (RenderingContext != IntPtr.Zero)
@@ -189,37 +173,14 @@ namespace UI.Controls.Viewport
     }
 
 
-    /// <summary>
-    ///     An exception raised when errors occur in the Open Gl context
-    /// </summary>
     [Serializable]
     public class GLContextException : Exception
     {
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="GLContextException" /> class.
-        /// </summary>
-        /// <param name="message">The message.</param>
         public GLContextException(string message)
             : base(message)
         {
         }
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="GLContextException" /> class.
-        /// </summary>
-        /// <param name="info">
-        ///     The <see cref="T:System.Runtime.Serialization.SerializationInfo"></see> that holds the serialized
-        ///     object data about the exception being thrown.
-        /// </param>
-        /// <param name="context">
-        ///     The <see cref="T:System.Runtime.Serialization.StreamingContext"></see> that contains contextual
-        ///     information about the source or destination.
-        /// </param>
-        /// <exception cref="T:System.Runtime.Serialization.SerializationException">
-        ///     The class name is null or
-        ///     <see cref="P:System.Exception.HResult"></see> is zero (0).
-        /// </exception>
-        /// <exception cref="T:System.ArgumentNullException">The info parameter is null. </exception>
         protected GLContextException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {

@@ -109,17 +109,11 @@ namespace UI.Controls.Viewport
 
         private int _fontOffset;
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="RasterFont" /> class.
-        /// </summary>
         internal RasterFont()
         {
             Initialize();
         }
 
-        /// <summary>
-        ///     Initializes this instance.
-        /// </summary>
         private void Initialize()
         {
             const int glyphHeight = 13;
@@ -171,31 +165,16 @@ namespace UI.Controls.Viewport
             Gl.glPopAttrib();
         }
 
-        /// <summary>
-        ///     Prints the specified text.
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <param name="position">The position.</param>
         public void Print(string text, Point2 position)
         {
             Print(text, position.X, position.Y);
         }
 
-        /// <summary>
-        ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
         public void Dispose()
         {
             Dispose(true);
         }
         
-        /// <summary>
-        ///     Releases unmanaged and - optionally - managed resources
-        /// </summary>
-        /// <param name="disposing">
-        ///     <c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only
-        ///     unmanaged resources.
-        /// </param>
         private void Dispose(bool disposing)
         {
             if (disposing)

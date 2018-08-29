@@ -6,9 +6,6 @@ namespace Core.Geometry
     [DebuggerDisplay("center={_center} extentX={ExtentX} extentY={ExtentY}")]
     public struct AxisAlignedBox2
     {
-        private readonly Point2 _center;
-        private readonly float _extentY;
-        private readonly float _extentX;
         public static readonly AxisAlignedBox2 Empty = new AxisAlignedBox2();
 
         /// <summary>
@@ -20,9 +17,9 @@ namespace Core.Geometry
         /// <param name="extentY">The extent Y.</param>
         public AxisAlignedBox2(float x, float y, float extentX, float extentY)
         {
-            _center = new Point2(x, y);
-            _extentX = extentX;
-            _extentY = extentY;
+            Center = new Point2(x, y);
+            ExtentX = extentX;
+            ExtentY = extentY;
         }
 
         /// <summary>
@@ -33,9 +30,9 @@ namespace Core.Geometry
         /// <param name="extentY">The extent Y.</param>
         public AxisAlignedBox2(Point2 center, float extentX, float extentY)
         {
-            _center = center;
-            _extentX = extentX;
-            _extentY = extentY;
+            Center = center;
+            ExtentX = extentX;
+            ExtentY = extentY;
         }
 
         /// <summary>
@@ -48,9 +45,9 @@ namespace Core.Geometry
             var min = Point2.ComponentWiseMin(a, b);
             var max = Point2.ComponentWiseMax(a, b);
 
-            _center = new Point2((max.X + min.X) / 2f, (max.Y + min.Y) / 2f);
-            _extentX = (max.X - min.X) / 2f;
-            _extentY = (max.Y - min.Y) / 2f;
+            Center = new Point2((max.X + min.X) / 2f, (max.Y + min.Y) / 2f);
+            ExtentX = (max.X - min.X) / 2f;
+            ExtentY = (max.Y - min.Y) / 2f;
         }
 
         /// <summary>
@@ -117,9 +114,9 @@ namespace Core.Geometry
         /// </returns>
         public override int GetHashCode()
         {
-            return _center.GetHashCode() ^
-                   _extentX.GetHashCode() ^
-                   _extentY.GetHashCode();
+            return Center.GetHashCode() ^
+                   ExtentX.GetHashCode() ^
+                   ExtentY.GetHashCode();
         }
 
         /// <summary>
@@ -193,7 +190,7 @@ namespace Core.Geometry
         /// <returns>The result of the operator.</returns>
         public static bool operator ==(AxisAlignedBox2 left, AxisAlignedBox2 right)
         {
-            return left._center == right._center &&
+            return left.Center == right.Center &&
                    Equals(left.ExtentX, right.ExtentX) &&
                    Equals(left.ExtentY, right.ExtentY);
         }
@@ -222,10 +219,7 @@ namespace Core.Geometry
         ///     Gets or sets the location.
         /// </summary>
         /// <value>The location.</value>
-        public Point2 Center
-        {
-            get { return _center; }
-        }
+        public Point2 Center { get; }
 
         /// <summary>
         ///     Gets the center X coord.
@@ -233,7 +227,7 @@ namespace Core.Geometry
         /// <value>The X.</value>
         public float X
         {
-            get { return _center.X; }
+            get { return Center.X; }
         }
 
         /// <summary>
@@ -242,7 +236,7 @@ namespace Core.Geometry
         /// <value>The Y.</value>
         public float Y
         {
-            get { return _center.Y; }
+            get { return Center.Y; }
         }
 
         /// <summary>
@@ -251,7 +245,7 @@ namespace Core.Geometry
         /// <value>The left.</value>
         public float Left
         {
-            get { return _center.X - ExtentX; }
+            get { return Center.X - ExtentX; }
         }
 
         /// <summary>
@@ -260,7 +254,7 @@ namespace Core.Geometry
         /// <value>The right.</value>
         public float Right
         {
-            get { return _center.X + ExtentX; }
+            get { return Center.X + ExtentX; }
         }
 
         /// <summary>
@@ -269,7 +263,7 @@ namespace Core.Geometry
         /// <value>The top.</value>
         public float Top
         {
-            get { return _center.Y + ExtentY; }
+            get { return Center.Y + ExtentY; }
         }
 
         /// <summary>
@@ -278,7 +272,7 @@ namespace Core.Geometry
         /// <value>The bottom.</value>
         public float Bottom
         {
-            get { return _center.Y - ExtentY; }
+            get { return Center.Y - ExtentY; }
         }
 
         /// <summary>
@@ -298,23 +292,17 @@ namespace Core.Geometry
         {
             get { return ExtentY * 2; }
         }
-        
+
         /// <summary>
         ///     Gets or sets the extent X.
         /// </summary>
         /// <value>The extent X.</value>
-        public float ExtentX
-        {
-            get { return _extentX; }
-        }
+        public float ExtentX { get; }
 
         /// <summary>
         ///     Gets or sets the extent Y.
         /// </summary>
         /// <value>The extent Y.</value>
-        public float ExtentY
-        {
-            get { return _extentY; }
-        }
+        public float ExtentY { get; }
     }
 }

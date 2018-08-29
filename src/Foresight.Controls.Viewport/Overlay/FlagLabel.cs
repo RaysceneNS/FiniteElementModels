@@ -27,10 +27,6 @@ namespace UI.Controls.Viewport.Overlay
         {
         }
 
-        /// <summary>
-        ///     Updates the _image.
-        /// </summary>
-        /// <returns>the image</returns>
         protected override Bitmap CreateImage()
         {
             const int poleHeight = 24;

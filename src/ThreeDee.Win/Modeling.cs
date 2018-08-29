@@ -9,24 +9,28 @@ using Label = System.Windows.Forms.Label;
 
 namespace UI.Windows
 {
-	public static class Modeling
+    public static class Modeling
     {
         private const float TOLERANCE = 0.00001f;
 
         private static Model BracketModel(IProgress<TaskProgress> progressReport)
         {
-            var lb = new LoopBuilder();
-            lb.AddLineSegment(0, 0, 100, 0);
-            lb.AddLineSegment(100, 0, 100, 10);
-            lb.AddLineSegment(100, 10, 0, 10);
-            lb.AddLineSegment(0, 10, 0, 0);
-
-            var lb2 = new LoopBuilder();
-            lb2.AddArc(48, 5, 2, 0, 360);
-
-            var mesher = new BasicMesher();
-            mesher.AddLoop(lb.Build(true, 1));
-            mesher.AddLoop(lb2.Build(true, 1));
+            var mesher = new BasicMesher()
+                .AddLoop(new LoopBuilder()
+                    .AddLineSegment(0, 0, 50, 0)
+                    .AddLineSegment(50, 0, 50, 10)
+                    .AddLineSegment(50, 10, 0, 10)
+                    .AddLineSegment(0, 10, 0, 0)
+                    .Build(true, 1))
+                .AddLoop(new LoopBuilder()
+                    .AddArc(26, 5, 4, 0, 360)
+                    .Build(true, 1))
+                .AddLoop(new LoopBuilder()
+                    .AddArc(9, 5, 4, 0, 360)
+                    .Build(true, 1))
+                .AddLoop(new LoopBuilder()
+                    .AddArc(41, 5, 4, 0, 360)
+                    .Build(true, 1));
 
             // Perform a triangulation within the boundaries of the shape
             var model = mesher.TriangulateIteratively(progressReport);
@@ -34,13 +38,17 @@ namespace UI.Windows
             // apply Displacements and loads to the nodes of the model
             foreach (var node in model.Nodes)
             {
-                if (Math.Abs(node.Y) < TOLERANCE && node.X < 65)
+                if (Math.Abs(node.Y) < TOLERANCE && node.X < 5)
+                {
+                    node.FixAll();
+                }
+                if (Math.Abs(node.Y) < TOLERANCE && node.X > 45)
                 {
                     node.FixAll();
                 }
 
-                if (node.X > 83 && node.X < 97 && Math.Abs(node.Y - 10) < TOLERANCE)
-                    node.ApplyLoad(0, -50);
+                if (node.X > 20 && node.X < 32 && Math.Abs(node.Y - 10) < TOLERANCE)
+                    node.ApplyLoad(0, -1500);
             }
 
             return model;
@@ -67,7 +75,7 @@ namespace UI.Windows
             viewport.Invalidate();
             viewport.ZoomExtents();
             viewport.DrawingMode = DrawingModes.Wireframe;
-
+            
             // Solve the unknowns in the Finite Element model
             await Task.Run(() => new PlanarStressSolver(model, 10, 30000, 0.25f).SolvePlaneStress(progressReport));
 

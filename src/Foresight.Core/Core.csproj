@@ -64,7 +64,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorythm\BasicMesher.cs" />
-    <Compile Include="Algorythm\DelaunyTriangulation.cs" />
     <Compile Include="Algorythm\LoopBuilder.cs" />
     <Compile Include="Fem\Element.cs" />
     <Compile Include="Fem\Model.cs" />

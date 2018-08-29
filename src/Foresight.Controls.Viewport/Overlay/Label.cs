@@ -6,10 +6,6 @@ using Core.Geometry;
 
 namespace UI.Controls.Viewport.Overlay
 {
-    /// <summary>
-    ///     A 2d overlay that display text in a particular font and color, the label is mapped to a vertice in the scene
-    ///     and moves to follow it
-    /// </summary>
     public class Label : LabelBase
     {
         private Font _font;
@@ -33,10 +29,6 @@ namespace UI.Controls.Viewport.Overlay
             _font = textFont;
         }
 
-        /// <summary>
-        ///     Gets or sets the text.
-        /// </summary>
-        /// <value>The text.</value>
         public string Text
         {
             get { return _text; }
@@ -47,10 +39,6 @@ namespace UI.Controls.Viewport.Overlay
             }
         }
 
-        /// <summary>
-        ///     Gets or sets the color.
-        /// </summary>
-        /// <value>The color.</value>
         public Color TextColor
         {
             get { return _textColor; }
@@ -61,10 +49,6 @@ namespace UI.Controls.Viewport.Overlay
             }
         }
 
-        /// <summary>
-        ///     Gets or sets the color of the background fill.
-        /// </summary>
-        /// <value>The color of the fill.</value>
         public Color FillColor
         {
             get { return _backgroundColor; }
@@ -75,10 +59,6 @@ namespace UI.Controls.Viewport.Overlay
             }
         }
 
-        /// <summary>
-        ///     Gets or sets the font.
-        /// </summary>
-        /// <value>The font.</value>
         public Font Font
         {
             get { return _font; }
@@ -89,10 +69,6 @@ namespace UI.Controls.Viewport.Overlay
             }
         }
 
-        /// <summary>
-        ///     Updates the _image.
-        /// </summary>
-        /// <returns>the image</returns>
         protected override Bitmap CreateImage()
         {
             if (_text.Length == 0)

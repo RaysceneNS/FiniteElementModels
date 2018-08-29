@@ -17,9 +17,6 @@ namespace UI.Controls.Viewport
         private Point2 _panPosition;
         private Size2 _zoomSize;
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="Camera" /> class.
-        /// </summary>
         internal Camera()
         {
             Orientation = new Quaternion();
@@ -27,9 +24,6 @@ namespace UI.Controls.Viewport
             DegreesOfFreedom = Axes.Xyz;
         }
 
-        /// <summary>
-        ///     Reset the pan and zoom
-        /// </summary>
         internal void Reset()
         {
             ResetPan();
