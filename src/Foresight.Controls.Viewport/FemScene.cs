@@ -13,11 +13,6 @@ namespace UI.Controls.Viewport
         private bool _displayListsCreated;
         private int _loadSymbolList, _constraintSymbolList;
 
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="model"></param>
-        /// <param name="symbolSize"></param>
         public FemScene(Model model, float symbolSize)
             : base()
         {
@@ -49,10 +44,6 @@ namespace UI.Controls.Viewport
             Gl.glEndList();
         }
 
-        /// <summary>
-        /// Determine the bounding rectangle for this mesh
-        /// </summary>
-        /// <returns></returns>
         internal override AxisAlignedBox2 DisplayBoundingRect()
         {
             var minX = float.MaxValue;
@@ -236,23 +227,23 @@ namespace UI.Controls.Viewport
                     case PlotMode.PerNode:
                         c = ramp[node1.ColorIndex];
                         Gl.glColor3ub(c.R, c.G, c.B);
-                        Gl.glVertex2d(node1.X + node1.UX, node1.Y + node1.UY);
+                        Gl.glVertex2d(node1.X + node1.FreedomX, node1.Y + node1.FreedomY);
 
                         c = ramp[node2.ColorIndex];
                         Gl.glColor3ub(c.R, c.G, c.B);
-                        Gl.glVertex2d(node2.X + node2.UX, node2.Y + node2.UY);
+                        Gl.glVertex2d(node2.X + node2.FreedomX, node2.Y + node2.FreedomY);
 
                         c = ramp[node3.ColorIndex];
                         Gl.glColor3ub(c.R, c.G, c.B);
-                        Gl.glVertex2d(node3.X + node3.UX, node3.Y + node3.UY);
+                        Gl.glVertex2d(node3.X + node3.FreedomX, node3.Y + node3.FreedomY);
                         break;
 
                     case PlotMode.PerElement:
                         c = ramp[element.ColorIndex];
                         Gl.glColor3ub(c.R, c.G, c.B);
-                        Gl.glVertex2d(node1.X + node1.UX, node1.Y + node1.UY);
-                        Gl.glVertex2d(node2.X + node2.UX, node2.Y + node2.UY);
-                        Gl.glVertex2d(node3.X + node3.UX, node3.Y + node3.UY);
+                        Gl.glVertex2d(node1.X + node1.FreedomX, node1.Y + node1.FreedomY);
+                        Gl.glVertex2d(node2.X + node2.FreedomX, node2.Y + node2.FreedomY);
+                        Gl.glVertex2d(node3.X + node3.FreedomX, node3.Y + node3.FreedomY);
                         break;
                 }
             }
@@ -276,8 +267,8 @@ namespace UI.Controls.Viewport
 
                     if (_model.IsSolved)
                     {
-                        Gl.glVertex2d(edgeNode1.X + edgeNode1.UX, edgeNode1.Y + edgeNode1.UY);
-                        Gl.glVertex2d(edgeNode2.X + edgeNode2.UX, edgeNode2.Y + edgeNode2.UY);
+                        Gl.glVertex2d(edgeNode1.X + edgeNode1.FreedomX, edgeNode1.Y + edgeNode1.FreedomY);
+                        Gl.glVertex2d(edgeNode2.X + edgeNode2.FreedomX, edgeNode2.Y + edgeNode2.FreedomY);
                     }
                     else
                     {
@@ -388,11 +379,5 @@ namespace UI.Controls.Viewport
                 Gl.glEnd();
             }
         }
-    }
-
-    public enum PlotMode
-    {
-        PerElement,
-        PerNode
     }
 }

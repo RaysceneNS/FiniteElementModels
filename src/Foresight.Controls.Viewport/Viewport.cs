@@ -11,10 +11,6 @@ using UI.Controls.Viewport.Overlay;
 
 namespace UI.Controls.Viewport
 {
-    /// <summary>
-    /// Provides an viewport for displaying 3d scenes makes use of Tao OpenGl wrapper library
-    /// </summary>
-    [Description("A viewport for displaying 3d scenes")]
     public class Viewport : Control
     {
         private readonly Camera _camera;
@@ -24,18 +20,14 @@ namespace UI.Controls.Viewport
         private readonly Cursor _rotateCursor;
         private readonly Cursor _zoomCursor;
         private ActionType _action;
-        private DrawingModes _drawingModes;
+        private DrawingModes _drawingMode;
         private Vector3 _rotationPosition;
         private Point2 _startPoint, _endPoint;
         private readonly List<LabelBase> _labels;
         private readonly Legend _legend;
 
         public event EventHandler<EventArgs> ActionChanged;
-        public event EventHandler<EventArgs> DrawingModeChanged;
 
-        /// <summary>
-        ///     Constructor.  Creates contexts and sets properties.
-        /// </summary>
         public Viewport()
         {
             InitializeComponent();
@@ -52,7 +44,7 @@ namespace UI.Controls.Viewport
             _modelLight = new Light(Gl.GL_LIGHT0, 0.65f, 0.75f, 0.1f, new Point3(-50F, -150F, 100F));
 
             _labels = new List<LabelBase>();
-            _drawingModes = DrawingModes.Shaded;
+            _drawingMode = DrawingModes.Shaded;
 
             // default to a perspective based camera
             _camera = new CameraPerspective();
@@ -76,10 +68,6 @@ namespace UI.Controls.Viewport
             SetupGL();
         }
 
-        /// <summary>
-        ///     Overrides the control's class style parameters.
-        /// </summary>
-        /// <scalar>The create params.</scalar>
         protected override CreateParams CreateParams
         {
             [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
@@ -101,9 +89,6 @@ namespace UI.Controls.Viewport
             }
         }
 
-        /// <summary>
-        /// Required for designer support.
-        /// </summary>
         private void InitializeComponent()
         {
             SuspendLayout();
@@ -111,9 +96,6 @@ namespace UI.Controls.Viewport
             ResumeLayout(true);
         }
 
-        /// <summary>
-        ///     Setup the OpenGL state.
-        /// </summary>
         private static void SetupGL()
         {
             Gl.glLightModeli(Gl.GL_LIGHT_MODEL_COLOR_CONTROL, Gl.GL_SEPARATE_SPECULAR_COLOR);
@@ -130,37 +112,20 @@ namespace UI.Controls.Viewport
             Gl.glHint(Gl.GL_POINT_SMOOTH_HINT, Gl.GL_NICEST);
         }
 
-        /// <summary>
-        ///     Releases unmanaged and - optionally - managed resources
-        /// </summary>
-        /// <param name="disposing">
-        ///     <c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only
-        ///     unmanaged resources.
-        /// </param>
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
                 _renderingContext?.Dispose();
-
                 SceneObjects?.Clear();
-
                 Legend?.Dispose();
-
-                if (_rotateCursor != null)
-                    _rotateCursor.Dispose();
-                if (_zoomCursor != null)
-                    _zoomCursor.Dispose();
-                
+                _rotateCursor?.Dispose();
+                _zoomCursor?.Dispose();
                 _orientationIndicator?.Dispose();
             }
             base.Dispose(disposing);
         }
         
-        /// <summary>
-        ///     Paints the control.
-        /// </summary>
-        /// <param name="e">The <see cref="System.Windows.Forms.PaintEventArgs" /> instance containing the event data.</param>
         protected override void OnPaint(PaintEventArgs e)
         {
             if (DesignMode)
@@ -213,10 +178,6 @@ namespace UI.Controls.Viewport
             }
         }
 
-        /// <summary>
-        ///     Raises the <see cref="E:Resize" /> event.
-        /// </summary>
-        /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
@@ -227,21 +188,12 @@ namespace UI.Controls.Viewport
                 _camera.ResizeViewport(Width, Height);
         }
 
-        /// <summary>
-        ///     Raises the <see cref="E:GotFocus" /> event.
-        /// </summary>
-        /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
         protected override void OnGotFocus(EventArgs e)
         {
             base.OnGotFocus(e);
             Invalidate();
         }
 
-        /// <summary>
-        ///     Handles the ListChanged event of the _sceneObjects control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
         private void OnSceneListChanged(object sender, EventArgs e)
         {
             //Rescale Model
@@ -268,20 +220,12 @@ namespace UI.Controls.Viewport
             }
         }
 
-        /// <summary>
-        ///     Gets the orientation indicator.
-        /// </summary>
-        /// <value>The orientation indicator.</value>
         public bool OrientationIndicatorVisible
         {
             get { return _orientationIndicator.IsVisible; }
             set { _orientationIndicator.IsVisible = value; }
         }
 
-        /// <summary>
-        ///     The legend for this control
-        /// </summary>
-        /// <value>The legend.</value>
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Legend Legend
@@ -289,11 +233,6 @@ namespace UI.Controls.Viewport
             get { return _legend; }
         }
         
-        // Properties
-        /// <summary>
-        ///     Gets or sets the action.
-        /// </summary>
-        /// <value>The action.</value>
         [Browsable(false)]
         public ActionType Action
         {
@@ -320,49 +259,28 @@ namespace UI.Controls.Viewport
             }
         }
 
-        /// <summary>
-        ///     Sets the lines of entities
-        /// </summary>
-        /// <value>The scene objects.</value>
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public SceneObjectCollection SceneObjects { get; }
 
-        /// <summary>
-        ///     Gets the label overlays.
-        /// </summary>
-        /// <value>The label overlays.</value>
         [Browsable(false)]
         public List<LabelBase> Labels
         {
             get { return _labels; }
         }
 
-        /// <summary>
-        ///     Gets or sets the drawing mode.
-        /// </summary>
-        /// <value>The drawing mode.</value>
         [Description("Drawing mode.")]
         [Category("Appearance")]
         public DrawingModes DrawingMode
         {
-            get { return _drawingModes; }
+            get { return _drawingMode; }
             set
             {
-                // apply the action type.
-                if (_drawingModes != value)
-                {
-                    _drawingModes = value;
-                    DrawingModeChanged?.Invoke(this, new EventArgs());
-                }
-
+                _drawingMode = value;
                 Invalidate();
             }
         }
         
-        /// <summary>
-        ///     Render the scene to the viewport
-        /// </summary>
         private void DrawAll()
         {
             // Clear Screen And Depth Buffer
@@ -379,9 +297,6 @@ namespace UI.Controls.Viewport
             Gl.glFlush();
         }
 
-        /// <summary>
-        ///     Paint the 2d portions of the scene
-        /// </summary>
         private void Draw2D()
         {
             var width = Width;
@@ -434,9 +349,6 @@ namespace UI.Controls.Viewport
             Gl.glPopMatrix();
         }
 
-        /// <summary>
-        ///     Draw the 3d objects in the scene
-        /// </summary>
         private void Draw3D()
         {
             Gl.glPushAttrib(Gl.GL_ENABLE_BIT);
@@ -467,7 +379,7 @@ namespace UI.Controls.Viewport
                     }
 
                     // draw all the entities now
-                    DrawSceneObjects(_drawingModes);
+                    DrawSceneObjects(_drawingMode);
                     _modelLight.SwitchOff();
 
                     Gl.glMatrixMode(Gl.GL_PROJECTION);
@@ -477,10 +389,6 @@ namespace UI.Controls.Viewport
             Gl.glPopAttrib();
         }
 
-        /// <summary>
-        ///     Draws the scene objects.
-        /// </summary>
-        /// <param name="drawingModes">The drawing modes.</param>
         private void DrawSceneObjects(DrawingModes drawingModes)
         {
             Gl.glPushAttrib(Gl.GL_ENABLE_BIT);
@@ -526,11 +434,6 @@ namespace UI.Controls.Viewport
             Gl.glPopAttrib();
         }
 
-        /// <summary>
-        ///     Paint the zoom window box
-        /// </summary>
-        /// <param name="p1">The p1.</param>
-        /// <param name="p2">The p2.</param>
         private static void DrawZoomWindowBox(Point2 p1, Point2 p2)
         {
             Gl.glPushAttrib(Gl.GL_ENABLE_BIT);
@@ -555,10 +458,6 @@ namespace UI.Controls.Viewport
             Gl.glPopAttrib();
         }
 
-        /// <summary>
-        ///     Fired when the mouse wheel spins
-        /// </summary>
-        /// <param name="e">The <see cref="System.Windows.Forms.MouseEventArgs" /> instance containing the event data.</param>
         protected override void OnMouseWheel(MouseEventArgs e)
         {
             float amount = e.Delta / -4f;
@@ -568,10 +467,6 @@ namespace UI.Controls.Viewport
             base.OnMouseWheel(e);
         }
 
-        /// <summary>
-        ///     Fired when the mouse is released
-        /// </summary>
-        /// <param name="e">The <see cref="System.Windows.Forms.MouseEventArgs" /> instance containing the event data.</param>
         protected override void OnMouseUp(MouseEventArgs e)
         {
             if (_action == ActionType.ZoomWindow && _startPoint != _endPoint)
@@ -592,10 +487,6 @@ namespace UI.Controls.Viewport
             base.OnMouseUp(e);
         }
 
-        /// <summary>
-        ///     Override mouse down
-        /// </summary>
-        /// <param name="e">The <see cref="System.Windows.Forms.MouseEventArgs" /> instance containing the event data.</param>
         protected override void OnMouseDown(MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -625,10 +516,6 @@ namespace UI.Controls.Viewport
             base.OnMouseDown(e);
         }
 
-        /// <summary>
-        ///     Move the model
-        /// </summary>
-        /// <param name="e">The <see cref="System.Windows.Forms.MouseEventArgs" /> instance containing the event data.</param>
         protected override void OnMouseMove(MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left && _action != ActionType.None)
@@ -673,9 +560,6 @@ namespace UI.Controls.Viewport
             base.OnMouseMove(e);
         }
 
-        /// <summary>
-        ///     Zoom to fit
-        /// </summary>
         public void ZoomExtents()
         {
             if (SceneObjects.Count <= 0)
@@ -718,94 +602,58 @@ namespace UI.Controls.Viewport
             }
         }
 
-        /// <summary>
-        ///     Zoom to a fixed amount
-        /// </summary>
-        /// <param name="amount">The amount.</param>
         public void Zoom(float amount)
         {
             _camera.Zoom(amount);
         }
 
-        /// <summary>
-        ///     Reset the zoom
-        /// </summary>
         public void ResetZoom()
         {
             _camera.ResetZoom();
         }
 
-        /// <summary>
-        ///     Pan by the specified amount
-        /// </summary>
-        /// <param name="dx">The dx.</param>
-        /// <param name="dy">The dy.</param>
         public void Pan(float dx, float dy)
         {
             _camera.Pan(dx, dy);
             Invalidate();
         }
 
-        /// <summary>
-        ///     Reset the panning
-        /// </summary>
         public void ResetPan()
         {
             _camera.ResetPan();
             Invalidate();
         }
 
-        /// <summary>
-        ///     Rotates the specified axis.
-        /// </summary>
-        /// <param name="axis">The axis.</param>
-        /// <param name="degrees">The number of degrees to rotate.</param>
-        public void Rotate(Vector3 axis, float degrees)
+        public void Rotate(Vector3 axis, float radians)
         {
-            _camera.Rotate(axis, Degrees.ToRadians(degrees));
+            _camera.Rotate(axis, radians);
             Invalidate();
         }
         
-        /// <summary>
-        ///     Sets the Top viewpoint
-        /// </summary>
         public void TopView()
         {
             _camera.TopView();
             Invalidate();
         }
 
-        /// <summary>
-        ///     Sets the Front viewpoint
-        /// </summary>
         public void FrontView()
         {
             _camera.FrontView();
             Invalidate();
         }
 
-        /// <summary>
-        ///     Sets the Side viewpoint
-        /// </summary>
         public void SideView()
         {
             _camera.SideView();
             Invalidate();
         }
 
-        /// <summary>
-        ///     Sets the ISO viewpoint
-        /// </summary>
         public void IsoView()
         {
             _camera.IsoView();
             Invalidate();
         }
 
-        /// <summary>
-        ///     Maps object coordinates to window coordinates
-        /// </summary>
-        /// <param name="p">The p.</param>
         internal static Point2 Project(Point3 p)
         {
             var modelMatrix = new double[16];
@@ -816,8 +664,7 @@ namespace UI.Controls.Viewport
             Gl.glGetDoublev(Gl.GL_PROJECTION_MATRIX, projMatrix);
             Gl.glGetIntegerv(Gl.GL_VIEWPORT, viewport);
 
-            double winX, winY, winZ;
-            if (Glu.gluProject(p.X, p.Y, p.Z, modelMatrix, projMatrix, viewport, out winX, out winY, out winZ) == Gl.GL_FALSE)
+            if (Glu.gluProject(p.X, p.Y, p.Z, modelMatrix, projMatrix, viewport, out var winX, out var winY, out _) == Gl.GL_FALSE)
                 throw new GLException("Call to gluProject() failed.");
 
             return new Point2((float) winX, (float) winY);

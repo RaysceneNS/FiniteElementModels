@@ -16,13 +16,6 @@ namespace Core.Fem
         private int _numElements;
         private readonly Model _mesh;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PlanarStressSolver"/> class.
-        /// </summary>
-        /// <param name="mesh">The mesh.</param>
-        /// <param name="thickness">The thickness.</param>
-        /// <param name="youngsModulus">The youngs modulus.</param>
-        /// <param name="poissonsRatio">The poissons ratio.</param>
         public PlanarStressSolver(Model mesh, float thickness, float youngsModulus, float poissonsRatio)
         {
             this._mesh = mesh;
@@ -33,9 +26,6 @@ namespace Core.Fem
             this._poissonsRatio = poissonsRatio;
         }
 
-        /// <summary>
-        /// Solves a plane stress problem
-        /// </summary>
         public void SolvePlaneStress(IProgress<TaskProgress> progressReport)
         {
             this._mesh.IsSolved = false;
@@ -145,13 +135,6 @@ namespace Core.Fem
             this._mesh.IsSolved = true;
         }
 
-        /// <summary>
-        /// Solves the equations.
-        /// </summary>
-        /// <param name="forces">The forces.</param>
-        /// <param name="loads">The loads.</param>
-        /// <param name="stiffnessValues">The stiffness values.</param>
-        /// <param name="stiffnessIndexes">The stiffness indexes.</param>
         private void SolveEquations(float[] forces, float[] loads, float[][] stiffnessValues, int[][] stiffnessIndexes)
         {
             var loads1 = new float[this._numElements];
@@ -201,11 +184,6 @@ namespace Core.Fem
             }
         }
 
-        /// <summary>
-        /// Calculates the element stiffness.
-        /// </summary>
-        /// <param name="index">The index.</param>
-        /// <param name="stiffness">The stiffness.</param>
         private void CalculateElementStiffness(int index, ref float[] stiffness)
         {
             var num = index / DEGREES_OF_FREEDOM;
@@ -258,13 +236,6 @@ namespace Core.Fem
             }
         }
 
-        /// <summary>
-        /// Calculates the stresses.
-        /// </summary>
-        /// <param name="loads">The loads.</param>
-        /// <param name="stresses">The stresses.</param>
-        /// <param name="stiffnessValues">The stiffness values.</param>
-        /// <param name="stiffnessIndexes">The stiffness indexes.</param>
         private void CalculateStresses(float[] loads, ref float[] stresses, float[][] stiffnessValues, int[][] stiffnessIndexes)
         {
             for (var i = 0; i < this._numElements; i++)
@@ -278,14 +249,6 @@ namespace Core.Fem
             }
         }
 
-        /// <summary>
-        /// Calculates the loads.
-        /// </summary>
-        /// <param name="index">The index.</param>
-        /// <param name="stiffness">The stiffness.</param>
-        /// <param name="isDisplaced">The is displaced.</param>
-        /// <param name="displacements">The displacements.</param>
-        /// <param name="loads">The loads.</param>
         private void CalculateLoads(int index, ref float[] stiffness, bool[] isDisplaced, float[] displacements, ref float loads)
         {
             var ind = index;

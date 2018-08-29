@@ -5,9 +5,6 @@ using Core.MathLib;
 
 namespace UI.Controls.Viewport.Overlay
 {
-    /// <summary>
-    ///     Displays the legend for the current plot
-    /// </summary>
     public class Legend : OverlayBase
     {
         private const int NUMBER_OF_VALUES = 10;
@@ -17,9 +14,6 @@ namespace UI.Controls.Viewport.Overlay
         private float _minValue, _maxValue;
         private string _title;
 
-        /// <summary>
-        ///     Create the legend
-        /// </summary>
         internal Legend()
         {
             _minValue = 0f;
@@ -30,10 +24,6 @@ namespace UI.Controls.Viewport.Overlay
             _titleFont = new Font("MS Sans Serif", 8.25f, FontStyle.Bold);
         }
 
-        /// <summary>
-        ///     Gets or sets the ramp.
-        /// </summary>
-        /// <value>The ramp.</value>
         public ColorScale ColorScale
         {
             get { return _colorScale; }
@@ -44,10 +34,6 @@ namespace UI.Controls.Viewport.Overlay
             }
         }
 
-        /// <summary>
-        ///     Max scalar for legend
-        /// </summary>
-        /// <value>The max scalar.</value>
         public float MaxValue
         {
             get { return _maxValue; }
@@ -58,10 +44,6 @@ namespace UI.Controls.Viewport.Overlay
             }
         }
 
-        /// <summary>
-        ///     Min Legend's scalar.
-        /// </summary>
-        /// <value>The min scalar.</value>
         public float MinValue
         {
             get { return _minValue; }
@@ -72,10 +54,6 @@ namespace UI.Controls.Viewport.Overlay
             }
         }
 
-        /// <summary>
-        ///     Legend's _title.
-        /// </summary>
-        /// <value>The _title.</value>
         public string Title
         {
             get { return _title; }
@@ -179,7 +157,6 @@ namespace UI.Controls.Viewport.Overlay
             return newImage;
         }
 
-        /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
             base.Dispose(disposing);

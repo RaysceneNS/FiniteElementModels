@@ -15,22 +15,14 @@ namespace UI.Controls.Viewport
         /// <summary>
         ///     Create a neutral colored light source i.e. (R=G=B)
         /// </summary>
-        /// <param name="lightIndex">Index of the light.</param>
-        /// <param name="diffuse">The diffuse.</param>
-        /// <param name="specular">The specular.</param>
-        /// <param name="ambient">The ambient.</param>
-        /// <param name="position">The position.</param>
         internal Light(int lightIndex, float diffuse, float specular, float ambient, Point3 position)
         {
             if (diffuse < 0.0f || diffuse > 1.0f)
-                throw new ArgumentOutOfRangeException(nameof(diffuse), diffuse,
-                    "Diffuse lighting level must be in the range of 0-1");
+                throw new ArgumentOutOfRangeException(nameof(diffuse), diffuse, "Diffuse lighting level must be in the range of 0-1");
             if (specular < 0.0f || specular > 1.0f)
-                throw new ArgumentOutOfRangeException(nameof(specular), specular,
-                    "Specular lighting level must be in the range of 0-1");
+                throw new ArgumentOutOfRangeException(nameof(specular), specular, "Specular lighting level must be in the range of 0-1");
             if (ambient < 0.0f || ambient > 1.0f)
-                throw new ArgumentOutOfRangeException(nameof(ambient), ambient,
-                    "Ambient lighting level must be in the range of 0-1");
+                throw new ArgumentOutOfRangeException(nameof(ambient), ambient, "Ambient lighting level must be in the range of 0-1");
 
             //set the light properties
             _diffuseLevel = diffuse;
@@ -40,9 +32,6 @@ namespace UI.Controls.Viewport
             _position = position;
         }
 
-        /// <summary>
-        ///     Turns this light on
-        /// </summary>
         public void SwitchOn()
         {
             // set the properties for this light
@@ -58,17 +47,9 @@ namespace UI.Controls.Viewport
             Gl.glLightfv(_lightIndex, Gl.GL_SPECULAR, new[] {_specularLevel, _specularLevel, _specularLevel, 1f});
         }
 
-        /// <summary>
-        ///     Switches the light off.
-        /// </summary>
         public void SwitchOff()
         {
             Gl.glDisable(_lightIndex);
-        }
-
-        public override string ToString()
-        {
-            return $"{_position} diff:{_diffuseLevel} ambi:{_ambientLevel} spec:{_specularLevel}";
         }
     }
 }

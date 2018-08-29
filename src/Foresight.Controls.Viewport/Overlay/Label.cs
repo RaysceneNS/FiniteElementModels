@@ -8,18 +8,11 @@ namespace UI.Controls.Viewport.Overlay
 {
     public class Label : LabelBase
     {
-        private Font _font;
-        private string _text;
-        private Color _textColor, _backgroundColor;
+        private readonly Font _font;
+        private readonly string _text;
+        private readonly Color _textColor;
+        private readonly Color _backgroundColor;
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="Label" /> class.
-        /// </summary>
-        /// <param name="p">The p.</param>
-        /// <param name="text">The text.</param>
-        /// <param name="textFont">The text _font.</param>
-        /// <param name="textColor">Color of the text.</param>
-        /// <param name="backgroundColor">Color of the background.</param>
         internal Label(Point3 p, string text, Font textFont, Color textColor, Color backgroundColor)
             : base(p)
         {
@@ -27,46 +20,6 @@ namespace UI.Controls.Viewport.Overlay
             _backgroundColor = backgroundColor;
             _text = text;
             _font = textFont;
-        }
-
-        public string Text
-        {
-            get { return _text; }
-            set
-            {
-                _text = value;
-                SetDirty();
-            }
-        }
-
-        public Color TextColor
-        {
-            get { return _textColor; }
-            set
-            {
-                _textColor = value;
-                SetDirty();
-            }
-        }
-
-        public Color FillColor
-        {
-            get { return _backgroundColor; }
-            set
-            {
-                _backgroundColor = value;
-                SetDirty();
-            }
-        }
-
-        public Font Font
-        {
-            get { return _font; }
-            set
-            {
-                _font = value;
-                SetDirty();
-            }
         }
 
         protected override Bitmap CreateImage()

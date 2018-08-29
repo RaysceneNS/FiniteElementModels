@@ -117,8 +117,7 @@ namespace Core.Geometry
         /// <returns></returns>
         public static AxisAlignedBox3 Inflate(AxisAlignedBox3 rect, float x, float y, float z)
         {
-            var box = new AxisAlignedBox3(x, y, z, rect.ExtentX + x, rect.ExtentY + y, rect.ExtentZ + z);
-            return box;
+            return new AxisAlignedBox3(x, y, z, rect.ExtentX + x, rect.ExtentY + y, rect.ExtentZ + z);
         }
 
         /// <summary>
@@ -168,12 +167,6 @@ namespace Core.Geometry
             return Empty;
         }
 
-        /// <summary>
-        ///     Implements the operator ==.
-        /// </summary>
-        /// <param name="left">The left.</param>
-        /// <param name="right">The right.</param>
-        /// <returns>The result of the operator.</returns>
         public static bool operator ==(AxisAlignedBox3 left, AxisAlignedBox3 right)
         {
             return left.Center == right.Center &&
@@ -182,12 +175,6 @@ namespace Core.Geometry
                    Equals(left.ExtentZ, right.ExtentZ);
         }
 
-        /// <summary>
-        ///     Implements the operator !=.
-        /// </summary>
-        /// <param name="left">The left.</param>
-        /// <param name="right">The right.</param>
-        /// <returns>The result of the operator.</returns>
         public static bool operator !=(AxisAlignedBox3 left, AxisAlignedBox3 right)
         {
             return !(left == right);

@@ -123,7 +123,8 @@ namespace Core.Algorythm
                         _faces.Remove(first);
                     }
                     first = next;
-                } while (first != null);
+                }
+                while (first != null);
 
                 var edgeNode = edges.First;
                 while (edgeNode != null)

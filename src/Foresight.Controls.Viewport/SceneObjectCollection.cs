@@ -50,9 +50,6 @@ namespace UI.Controls.Viewport
             OnListChanged(new EventArgs());
         }
 
-        /// <summary>
-        /// Compile the display lists for all the items in the collection
-        /// </summary>
         public void Compile()
         {
             foreach (var current in this)

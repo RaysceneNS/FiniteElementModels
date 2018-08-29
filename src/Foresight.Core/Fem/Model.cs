@@ -7,11 +7,6 @@ namespace Core.Fem
 {
     public class Model
     {
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="numNodes">The num nodes.</param>
-        /// <param name="numElements">The num elements.</param>
         public Model(int numNodes, int numElements)
             : base()
         {
@@ -55,10 +50,6 @@ namespace Core.Fem
             return AxisAlignedBox3.FromExtents(minX, minY, minZ, maxX, maxY, maxZ);
         }
 
-        /// <summary>
-        /// Gets or sets a scalar indicating whether this instance is solved.
-        /// </summary>
-        /// <scalar><c>true</c> if this instance is solved; otherwise, <c>false</c>.</scalar>
         public bool IsSolved { get; set; }
 
         public int ElementCount
@@ -85,21 +76,11 @@ namespace Core.Fem
 
         public Node MinNode { get; private set; }
 
-        /// <summary>
-        /// Nodes the specified index.
-        /// </summary>
-        /// <param name="index">The index.</param>
-        /// <returns></returns>
         public Node Node(int index)
         {
             return this.Nodes[index];
         }
 
-        /// <summary>
-        /// Elements the specified index.
-        /// </summary>
-        /// <param name="index">The index.</param>
-        /// <returns></returns>
         public Element Element(int index)
         {
             return this.Elements[index];
@@ -156,7 +137,7 @@ namespace Core.Fem
             var max = float.MinValue;
             foreach (var node in this.Nodes)
             {
-                var displacementSquared = node.UX * node.UX + node.UY * node.UY;
+                var displacementSquared = node.FreedomX * node.FreedomX + node.FreedomY * node.FreedomY;
 
                 if (displacementSquared < min)
                 {
@@ -177,7 +158,7 @@ namespace Core.Fem
 
             foreach (var node in this.Nodes)
             {
-                var displacement = Math.Sqrt(node.UX * node.UX + node.UY * node.UY);
+                var displacement = Math.Sqrt(node.FreedomX * node.FreedomX + node.FreedomY * node.FreedomY);
                 var percent = (displacement - min) / range;
                 node.ColorIndex = MathCore.Clamp(0, (int)(percent * 255), 255);
             }

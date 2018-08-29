@@ -75,6 +75,7 @@
   <ItemGroup>
     <Compile Include="Enums.cs" />
     <Compile Include="ColorScale.cs" />
+    <Compile Include="GLContextException.cs" />
     <Compile Include="Overlay\FlagLabel.cs" />
     <Compile Include="Overlay\LabelBase.cs" />
     <Compile Include="Overlay\Legend.cs" />

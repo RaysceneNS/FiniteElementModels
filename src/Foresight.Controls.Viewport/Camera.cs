@@ -6,10 +6,6 @@ using Tao.OpenGl;
 
 namespace UI.Controls.Viewport
 {
-    /// <summary>
-    ///     The camera class is a base for a set of derived classes for manipulating the
-    ///     projection matrix.
-    /// </summary>
     internal abstract class Camera
     {
         private Point3 _modelCenter;
@@ -30,12 +26,6 @@ namespace UI.Controls.Viewport
             ResetZoom();
         }
 
-        /// <summary>
-        ///     Resize the viewport window to the new dimensions, maintains the current
-        ///     pan and zoom levels relative to the new window size.
-        /// </summary>
-        /// <param name="width">The width.</param>
-        /// <param name="height">The height.</param>
         internal void ResizeViewport(int width, int height)
         {
             Debug.Assert(width != 0 && height != 0);
@@ -94,29 +84,17 @@ namespace UI.Controls.Viewport
             _modelExtent = extent;
         }
 
-        /// <summary>
-        ///     Pans the viewing window in the specified direction
-        /// </summary>
-        /// <param name="dx">The dx.</param>
-        /// <param name="dy">The dy.</param>
         internal void Pan(float dx, float dy)
         {
             var currentZoomFactor = CurrentZoomFactor;
             _panPosition = Point2.Offset(_panPosition, dx * currentZoomFactor, dy * currentZoomFactor);
         }
 
-        /// <summary>
-        ///     Reset the pan location to the center of the screen
-        /// </summary>
         internal void ResetPan()
         {
             _panPosition = new Point2(ViewportWidth / 2f, ViewportHeight / 2f);
         }
 
-        /// <summary>
-        ///     Zoom to a fixed amount
-        /// </summary>
-        /// <param name="amount">The amount.</param>
         internal void Zoom(float amount)
         {
             var currentZoomFactor = CurrentZoomFactor;
@@ -129,18 +107,11 @@ namespace UI.Controls.Viewport
             _zoomSize = new Size2(w,h);
         }
 
-        /// <summary>
-        ///     Reset the zoom so that it matches the viewport dimensions
-        /// </summary>
         internal void ResetZoom()
         {
             _zoomSize = new Size2(ViewportWidth, ViewportHeight);
         }
 
-        /// <summary>
-        ///     Zoom to a viewport window
-        /// </summary>
-        /// <param name="rect">The rect.</param>
         internal void ZoomWindow(AxisAlignedBox2 rect)
         {
             // can't zoom nothing..
@@ -175,11 +146,6 @@ namespace UI.Controls.Viewport
             _zoomSize = new Size2(width, height);
         }
 
-        /// <summary>
-        ///     Rotates the camera.
-        /// </summary>
-        /// <param name="axis">The axis to rotate the camera on.</param>
-        /// <param name="angle">The angle in radians.</param>
         internal void Rotate(Vector3 axis, float angle)
         {
             // zero out any axis rotations for pitch, yaw or roll if we're in any kind of freedom locking
@@ -203,41 +169,26 @@ namespace UI.Controls.Viewport
             Orientation *= new Quaternion(new Vector3(x,y,z), angle).Normalize();
         }
 
-        /// <summary>
-        /// Rotate the scene to iso view
-        /// </summary>
         internal void IsoView()
         {
-            Orientation = new Quaternion(new Vector3(0.7f, -0.7f, -0.2f), Degrees.ToRadians(45f)).Normalize();
+            Orientation = new Quaternion(new Vector3(0.7f, -0.7f, -0.2f), (float)System.Math.PI/4).Normalize();
         }
 
-        /// <summary>
-        ///     Rotate the scene to side view
-        /// </summary>
         internal void SideView()
         {
-            Orientation = new Quaternion(new Vector3(0f, 1f, 0f), Degrees.ToRadians(-90f)).Normalize();
+            Orientation = new Quaternion(new Vector3(0f, 1f, 0f), (float)System.Math.PI / -2).Normalize();
         }
 
-        /// <summary>
-        ///     Rotate the scene to top view
-        /// </summary>
         internal void TopView()
         {
-            Orientation = new Quaternion(new Vector3(1f, 0f, 0f), Degrees.ToRadians(90f)).Normalize();
+            Orientation = new Quaternion(new Vector3(1f, 0f, 0f), (float)System.Math.PI / 2).Normalize();
         }
 
-        /// <summary>
-        ///     Rotate the scene to front view
-        /// </summary>
         internal void FrontView()
         {
-            Orientation = new Quaternion(new Vector3(1f, 0f, 0f), Degrees.ToRadians(0f)).Normalize();
+            Orientation = new Quaternion(new Vector3(1f, 0f, 0f), 0f).Normalize();
         }
 
-        /// <summary>
-        ///     Set the attributes of the camera to use when viewing the scene, this is like choosing the lens, focal length, etc..
-        /// </summary>
         internal virtual void TransformProjectionMatrix()
         {
             // set the zoom rect
@@ -245,10 +196,6 @@ namespace UI.Controls.Viewport
             Glu.gluPickMatrix(_panPosition.X, _panPosition.Y, _zoomSize.Width, _zoomSize.Height, viewport);
         }
 
-        /// <summary>
-        /// Position the camera in the scene, this is effectively where the camera is located and where we're pointing the
-        /// camera
-        /// </summary>
         internal void TransformModelViewMatrix()
         {
             Gl.glTranslatef(0f, 0f, -ModelDistance);
@@ -268,82 +215,33 @@ namespace UI.Controls.Viewport
             Gl.glTranslatef(-_modelCenter.X, -_modelCenter.Y, -_modelCenter.Z);
         }
 
-        /// <summary>
-        ///     Gets the current zoom factor.
-        /// </summary>
-        /// <value>The current zoom factor.</value>
-        internal float CurrentZoomFactor
+        private float CurrentZoomFactor
         {
             get { return _zoomSize.Height / ViewportHeight; }
         }
 
-        /// <summary>
-        ///     Gets the quaternion orientation.
-        /// </summary>
-        /// <value>The quaternion.</value>
         internal Quaternion Orientation { get; private set; }
 
-        /// <summary>
-        ///     Gets the degrees of freedom.
-        /// </summary>
-        /// <value>The degrees of freedom.</value>
         internal Axes DegreesOfFreedom { get; }
 
-        /// <summary>
-        ///     Gets the width of the viewport.
-        /// </summary>
-        /// <value>The width of the viewport.</value>
         public int ViewportWidth { get; private set; }
 
-        /// <summary>
-        ///     Gets the height of the viewport.
-        /// </summary>
-        /// <value>The height of the viewport.</value>
         public int ViewportHeight { get; private set; }
 
-        /// <summary>
-        ///     Gets or sets the model distance.
-        /// </summary>
-        /// <value>The model distance.</value>
         public float ModelDistance { get; set; }
     }
 
-    /// <summary>
-    ///     This camera contains the data needed to perform a Perspective transformation
-    ///     to the projection matrix.
-    /// </summary>
     internal class CameraPerspective : Camera
     {
-        /// <summary>
-        ///     Gets or sets the field of view.
-        /// </summary>
-        /// <value>The field of view.</value>
-        /// <value>The field of view.</value>
-        [Description("The angle of the lense of the camera (60 degrees = human eye).")]
         [Category("Camera (Perspective")]
         public float FieldOfView { get; set; } = 60.0f;
 
-        /// <summary>
-        ///     Gets or sets the near.
-        /// </summary>
-        /// <value>The near.</value>
-        [Description("The near clipping distance.")]
         [Category("Camera (Perspective")]
         public float Near { get; set; } = 10f;
 
-        /// <summary>
-        ///     Gets or sets the far.
-        /// </summary>
-        /// <value>The far.</value>
-        /// <value>The far.</value>
-        [Description("The far clipping distance.")]
         [Category("Camera (Perspective")]
         public float Far { get; set; } = 500f;
 
-        /// <summary>
-        ///     This is the class' main function, to override this function and perform a
-        ///     perspective transformation.
-        /// </summary>
         internal override void TransformProjectionMatrix()
         {
             base.TransformProjectionMatrix();

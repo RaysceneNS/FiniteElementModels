@@ -4,15 +4,11 @@ using System.Drawing;
 
 namespace UI.Controls.Viewport
 {
-    public struct ColorScale
+    public class ColorScale
     {
         private const short SHADES = 256;
         private readonly byte[,] _color;
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="ColorScale" /> class.
-        /// </summary>
-        /// <param name="keyColors">The key colors.</param>
         private ColorScale(params KeyColor[] keyColors)
         {
             _color = new byte[3, SHADES];
@@ -20,35 +16,22 @@ namespace UI.Controls.Viewport
             Build(keyColors);
         }
         
-        /// <summary>
-        ///     Gets the shades.
-        /// </summary>
-        /// <value>The shades.</value>
         public static int ShadeCount
         {
             get { return SHADES; }
         }
 
-        /// <summary>
-        ///     Color indexer
-        /// </summary>
-        /// <param name="index"></param>
-        /// <returns></returns>
         public Color this[int index]
         {
             get { return Color.FromArgb(_color[0, index], _color[1, index], _color[2, index]); }
         }
 
-        /// <summary>
-        ///     Build, interpolate the colors that fall between the fixed node values
-        /// </summary>
         private void Build(IReadOnlyList<KeyColor> keys)
         {
-            var nbNode = (short) keys.Count;
-            Debug.Assert(nbNode >= 2);
+            var keysCount = (short) keys.Count;
 
             // if reverse then reorder the color values from back to front...
-            for (short i = 0; i < nbNode - 1; i++)
+            for (var i = 0; i < keysCount - 1; i++)
             {
                 var x1 = keys[i].Position;
                 var x2 = keys[i + 1].Position;
@@ -79,10 +62,6 @@ namespace UI.Controls.Viewport
             }
         }
         
-        /// <summary>
-        ///     Gets the rainbow.
-        /// </summary>
-        /// <value>The rainbow.</value>
         public static ColorScale Gradient
         {
             get
@@ -104,78 +83,7 @@ namespace UI.Controls.Viewport
             }
 
             internal short Position { get; }
-
             internal Color Color { get; }
-        }
-
-        /// <summary>
-        ///     Implements the operator ==.
-        /// </summary>
-        /// <param name="left">The left.</param>
-        /// <param name="right">The right.</param>
-        /// <returns>The result of the operator.</returns>
-        public static bool operator ==(ColorScale left, ColorScale right)
-        {
-            var equal = true;
-            for (var i = 0; i < 256; i++)
-            {
-                if (left._color[0, i] != right._color[0, i] ||
-                    left._color[1, i] != right._color[1, i] ||
-                    left._color[2, i] != right._color[2, i])
-                {
-                    equal = false;
-                    break;
-                }
-            }
-            return equal;
-        }
-
-        /// <summary>
-        ///     Implements the operator !=.
-        /// </summary>
-        /// <param name="left">The left.</param>
-        /// <param name="right">The right.</param>
-        /// <returns>The result of the operator.</returns>
-        public static bool operator !=(ColorScale left, ColorScale right)
-        {
-            return !(left == right);
-        }
-
-        /// <summary>
-        ///     Provides a unique hash code based on the member variables of this
-        ///     class.  This should be done because the equality operators (==, !=)
-        ///     have been overriden by this class.
-        ///     <p />
-        ///     The standard implementation is a simple XOR operation between all local
-        ///     member variables.
-        /// </summary>
-        /// <returns>
-        ///     A 32-bit signed integer that is the hash code for this instance.
-        /// </returns>
-        public override int GetHashCode()
-        {
-            var hash = 0;
-            for (var i = 0; i < 256; i++)
-            {
-                hash ^= _color[0, i] ^ _color[1, i] ^ _color[2, i];
-            }
-            return hash;
-        }
-
-        /// <summary>
-        ///     Compares this to another object.  This should be done because the
-        ///     equality operators (==, !=) have been overriden by this class.
-        /// </summary>
-        /// <param name="obj">Another object to compare to.</param>
-        /// <returns>
-        ///     true if obj and this instance are the same type and represent the same value; otherwise, false.
-        /// </returns>
-        public override bool Equals(object obj)
-        {
-            if (!(obj is ColorScale))
-                return false;
-
-            return (ColorScale) obj == this;
         }
     }
 }

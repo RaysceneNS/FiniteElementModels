@@ -105,8 +105,8 @@ namespace UI.Windows
 
             //label max displacement
             viewport.Labels.Add(new FlagLabel(
-                fm.MaxNode.X + fm.MaxNode.UX,
-                fm.MaxNode.Y + fm.MaxNode.UY,
+                fm.MaxNode.X + fm.MaxNode.FreedomX,
+                fm.MaxNode.Y + fm.MaxNode.FreedomY,
                 0,
                 "max",
                 SystemFonts.DefaultFont,

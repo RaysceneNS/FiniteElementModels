@@ -5,59 +5,32 @@ using Tao.OpenGl;
 
 namespace UI.Controls.Viewport.Overlay
 {
-    /// <summary>
-    ///     A bitmap based raster overlay that will be painted on the scene
-    /// </summary>
     public abstract class OverlayBase : IDisposable
     {
         private Bitmap _image;
         private bool _isDirty;
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="OverlayBase" /> class.
-        /// </summary>
         internal OverlayBase()
         {
             Visible = true;
             _isDirty = true;
         }
 
-        /// <summary>
-        ///     Gets or sets a value indicating whether this instance is visible.
-        /// </summary>
-        /// <value>
-        ///     <c>true</c> if this instance is visible; otherwise, <c>false</c>.
-        /// </value>
         public bool Visible { get; set; }
 
-        /// <summary>
-        ///     Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        /// <summary>
-        ///     Sets the dirty flag.
-        /// </summary>
         internal void SetDirty()
         {
             _isDirty = true;
         }
 
-        /// <summary>
-        ///     Creates the image.
-        /// </summary>
-        /// <returns>the image</returns>
         protected abstract Bitmap CreateImage();
 
-        /// <summary>
-        ///     Draw the image
-        /// </summary>
-        /// <param name="x">X.</param>
-        /// <param name="y">Y.</param>
         internal void Draw(int x, int y)
         {
             if (_isDirty)
@@ -89,13 +62,6 @@ namespace UI.Controls.Viewport.Overlay
             Gl.glPopAttrib();
         }
 
-        /// <summary>
-        ///     Releases unmanaged and - optionally - managed resources
-        /// </summary>
-        /// <param name="disposing">
-        ///     <c>true</c> to release both managed and unmanaged resources; <c>false</c> to release only
-        ///     unmanaged resources.
-        /// </param>
         protected virtual void Dispose(bool disposing)
         {
             _image?.Dispose();

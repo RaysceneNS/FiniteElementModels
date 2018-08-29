@@ -4,9 +4,6 @@ using Tao.OpenGl;
 
 namespace UI.Controls.Viewport
 {
-    /// <summary>
-    ///     paint indicator arrows to the screen that rotate according to the current display rotation matrix.
-    /// </summary>
     public sealed class OrientationIndicator : IDisposable
     {
         private int _displayList;
@@ -14,9 +11,6 @@ namespace UI.Controls.Viewport
         private Glu.GLUquadric _quadric;
         private bool _initialized;
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="OrientationIndicator" /> class.
-        /// </summary>
         internal OrientationIndicator()
         {
             IsVisible = true;

@@ -142,23 +142,11 @@ namespace Core.Geometry
             return new Point2(-left._x, -left._y);
         }
 
-        /// <summary>
-        ///     Implements the operator ==.
-        /// </summary>
-        /// <param name="a">A.</param>
-        /// <param name="b">B.</param>
-        /// <returns>The result of the operator.</returns>
         public static bool operator ==(Point2 a, Point2 b)
         {
             return MathCore.EqualityTest(a._x, b._x) && MathCore.EqualityTest(a._y, b._y);
         }
 
-        /// <summary>
-        ///     Implements the operator !=.
-        /// </summary>
-        /// <param name="a">A.</param>
-        /// <param name="b">B.</param>
-        /// <returns>The result of the operator.</returns>
         public static bool operator !=(Point2 a, Point2 b)
         {
             return !(a == b);
@@ -219,11 +207,6 @@ namespace Core.Geometry
             return u._x * v._x + u._y * v._y;
         }
 
-        /// <summary>
-        ///     Equalses the specified obj.
-        /// </summary>
-        /// <param name="obj">The obj.</param>
-        /// <returns></returns>
         public override bool Equals(object obj)
         {
             if (!(obj is Point2))
@@ -232,22 +215,9 @@ namespace Core.Geometry
             return (Point2) obj == this;
         }
 
-        /// <summary>
-        ///     Gets the hash code.
-        /// </summary>
-        /// <returns></returns>
         public override int GetHashCode()
         {
             return _x.GetHashCode() ^ _y.GetHashCode();
-        }
-
-        /// <summary>
-        ///     Toes the string.
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return _x.ToString("f3") + ", " + _y.ToString("f3");
         }
 
         /// <summary>
@@ -274,17 +244,7 @@ namespace Core.Geometry
             var dy = a._y - b._y;
             return (float) Math.Sqrt(dx * dx + dy * dy);
         }
-
-        /// <summary>
-        ///     Returns the distance between this point and the other point
-        /// </summary>
-        /// <param name="a">A.</param>
-        /// <returns></returns>
-        public float Distance(Point2 a)
-        {
-            return Distance(this, a);
-        }
-
+        
         /// <summary>
         ///     Computes the angle between this point and other point
         /// </summary>

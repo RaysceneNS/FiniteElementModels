@@ -6,28 +6,35 @@ namespace UI.Controls.Viewport
 {
     public abstract class SceneObject : IDisposable
     {
+        public abstract AxisAlignedBox3 AxisAlignedBoundingBox();
+        internal abstract AxisAlignedBox2 DisplayBoundingRect();
+
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        public abstract AxisAlignedBox3 AxisAlignedBoundingBox();
-        internal abstract AxisAlignedBox2 DisplayBoundingRect();
+        protected virtual void Dispose(bool disposing)
+        {
+        }
 
         ~SceneObject()
         {
             Dispose(false);
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-        }
-
+        
         internal abstract void Draw();
         internal virtual void DrawWireframe()
         {
         }
+
+        internal virtual void Compile()
+        {
+        }
+
+        internal abstract void DrawVertices();
 
         protected static Point2 Project(double objX, double objY, double objZ)
         {
@@ -43,11 +50,5 @@ namespace UI.Controls.Viewport
                 throw new GLException("Call to gluProject() failed.");
             return new Point2((float) x, (float) y);
         }
-
-        internal virtual void Compile()
-        {
-        }
-
-        internal abstract void DrawVertices();
     }
 }

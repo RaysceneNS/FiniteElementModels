@@ -411,47 +411,17 @@ namespace Core.Geometry
             return _x * v._x + _y * v._y;
         }
 
-        /// <summary>
-        ///     Returns the fully qualified type name of this instance.
-        /// </summary>
-        /// <returns>
-        ///     A <see cref="T:System.String"></see> containing a fully qualified type name.
-        /// </returns>
-        public override string ToString()
-        {
-            object[] objArray = {_x, ", ", _y, ", len=", Magnitude};
-            return string.Concat(objArray);
-        }
-
-        /// <summary>
-        ///     Implements the operator ==.
-        /// </summary>
-        /// <param name="a">A.</param>
-        /// <param name="b">The b.</param>
-        /// <returns>The result of the operator.</returns>
         public static bool operator ==(Vector2 a, Vector2 b)
         {
             return MathCore.EqualityTest(a._x, b._x) && MathCore.EqualityTest(a._y, b._y);
         }
 
-        /// <summary>
-        ///     Implements the operator !=.
-        /// </summary>
-        /// <param name="a">A.</param>
-        /// <param name="b">The b.</param>
-        /// <returns>The result of the operator.</returns>
+
         public static bool operator !=(Vector2 a, Vector2 b)
         {
             return !(a == b);
         }
 
-        /// <summary>
-        ///     Indicates whether this instance and a specified object are equal.
-        /// </summary>
-        /// <param name="obj">Another object to compare to.</param>
-        /// <returns>
-        ///     true if obj and this instance are the same type and represent the same scalar; otherwise, false.
-        /// </returns>
         public override bool Equals(object obj)
         {
             if (!(obj is Vector2))
@@ -460,25 +430,11 @@ namespace Core.Geometry
             return (Vector2) obj == this;
         }
 
-        /// <summary>
-        ///     Returns the hash code for this instance.
-        /// </summary>
-        /// <returns>
-        ///     A 32-bit signed integer that is the hash code for this instance.
-        /// </returns>
         public override int GetHashCode()
         {
             return _x.GetHashCode() ^ _y.GetHashCode();
         }
 
-        /// <summary>
-        ///     Returns the angle projected enabled the XY plane.
-        /// </summary>
-        /// <returns>the angle in degrees</returns>
-        public float AngleOnXy()
-        {
-            return  Radians.ToDegrees((float)Math.Atan2(_y, _x));
-        }
 
         /// <summary>
         ///     Determines the current angle in radians of the Vector2D and Returns it.
@@ -648,33 +604,7 @@ namespace Core.Geometry
         {
             return a.Magnitude >= b.Magnitude ? a : b;
         }
-
-        /// <summary>
-        ///     Calculates the component-wise minimum of 2 vectors
-        /// </summary>
-        /// <param name="value1">The value1.</param>
-        /// <param name="value2">The value2.</param>
-        /// <returns></returns>
-        public static Vector2 ComponentWiseMin(Vector2 value1, Vector2 value2)
-        {
-            var x = value1.X > value2.X ? value2.X : value1.X;
-            var y = value1.Y > value2.Y ? value2.Y : value1.Y;
-            return new Vector2(x, y);
-        }
-
-        /// <summary>
-        ///     Calculates the component-wise maximum of 2 vectors
-        /// </summary>
-        /// <param name="value1">The value1.</param>
-        /// <param name="value2">The value2.</param>
-        /// <returns></returns>
-        public static Vector2 ComponentWiseMax(Vector2 value1, Vector2 value2)
-        {
-            var x = value1.X < value2.X ? value2.X : value1.X;
-            var y = value1.Y < value2.Y ? value2.Y : value1.Y;
-            return new Vector2(x, y);
-        }
-
+        
         /// <summary>
         ///     Gets or sets the Y.
         /// </summary>

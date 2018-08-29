@@ -7,24 +7,20 @@ using Core.Geometry;
 
 namespace UI.Controls.Viewport.Overlay
 {
-    /// <summary>
-    ///     Paints a text label on a small wavy bit of fabric suspended on a pole
-    /// </summary>
-    public class FlagLabel : Label
+    public class FlagLabel : LabelBase
     {
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="FlagLabel" /> class.
-        /// </summary>
-        /// <param name="x">X.</param>
-        /// <param name="y">Y.</param>
-        /// <param name="z">Z.</param>
-        /// <param name="text">The text.</param>
-        /// <param name="textFont">The text font.</param>
-        /// <param name="textColor">Color of the text.</param>
-        /// <param name="backgroundColor">Color of the background.</param>
+        private readonly string _text;
+        private readonly Font _textFont;
+        private readonly Color _textColor;
+        private readonly Color _backgroundColor;
+
         public FlagLabel(float x, float y, float z, string text, Font textFont, Color textColor, Color backgroundColor)
-            : base(new Point3(x, y, z), text, textFont, textColor, backgroundColor)
+            : base(new Point3(x, y, z))
         {
+            _text = text;
+            _textFont = textFont;
+            _textColor = textColor;
+            _backgroundColor = backgroundColor;
         }
 
         protected override Bitmap CreateImage()
@@ -35,7 +31,7 @@ namespace UI.Controls.Viewport.Overlay
             SizeF ef;
             using (var graphics = Graphics.FromHwnd(IntPtr.Zero))
             {
-                ef = graphics.MeasureString(Text, Font);
+                ef = graphics.MeasureString(_text, _textFont);
             }
 
             var newImage = new Bitmap((int) Math.Ceiling(ef.Width) + margin, (int) Math.Ceiling(ef.Height) + poleHeight,
@@ -63,16 +59,16 @@ namespace UI.Controls.Viewport.Overlay
                 };
 
                 // draw the flag fabric
-                using (var brush = new SolidBrush(FillColor))
+                using (var brush = new SolidBrush(_backgroundColor))
                 {
                     graphics.FillPolygon(brush, points);
                 }
                 graphics.DrawPolygon(Pens.Black, points);
 
                 // draw the text
-                using (var brush = new SolidBrush(TextColor))
+                using (var brush = new SolidBrush(_textColor))
                 {
-                    graphics.DrawString(Text, Font, brush, 5f, 2f);
+                    graphics.DrawString(_text, _textFont, brush, 5f, 2f);
                 }
             }
 

@@ -27,4 +27,10 @@ namespace UI.Controls.Viewport
         Rotate,
         ZoomWindow
     }
+
+    public enum PlotMode
+    {
+        PerElement,
+        PerNode
+    }
 }

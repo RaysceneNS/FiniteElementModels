@@ -98,23 +98,11 @@ namespace Core.Geometry
             return Matrix4X4.CreateRotation(quaternion);
         }
 
-        /// <summary>
-        ///     Implements the operator ==.
-        /// </summary>
-        /// <param name="left">The left.</param>
-        /// <param name="right">The right.</param>
-        /// <returns>The result of the operator.</returns>
         public static bool operator ==(Quaternion left, Quaternion right)
         {
             return left._w == right._w && left.X == right.X && left.Y == right.Y && left.Z == right.Z;
         }
 
-        /// <summary>
-        ///     Implements the operator !=.
-        /// </summary>
-        /// <param name="left">The left.</param>
-        /// <param name="right">The right.</param>
-        /// <returns>The result of the operator.</returns>
         public static bool operator !=(Quaternion left, Quaternion right)
         {
             return !(left == right);
@@ -160,11 +148,10 @@ namespace Core.Geometry
         public static Vector3 operator *(Quaternion quat, Vector3 vector)
         {
             // nVidia SDK implementation
-            Vector3 uv, uuv;
             var qvec = new Vector3(quat.X, quat.Y, quat.Z);
 
-            uv = qvec.Cross(vector);
-            uuv = qvec.Cross(uv);
+            var uv = qvec.Cross(vector);
+            var uuv = qvec.Cross(uv);
             uv *= 2.0f * quat._w;
             uuv *= 2.0f;
 
@@ -373,11 +360,10 @@ namespace Core.Geometry
         {
             var mag = (float) quat.Magnitude;
 
-            float w, x, y, z;
-            w = MathCore.Clamp(-1.0f, quat._w / mag, 1.0f);
-            x = MathCore.Clamp(-1.0f, quat.X / mag, 1.0f);
-            y = MathCore.Clamp(-1.0f, quat.Y / mag, 1.0f);
-            z = MathCore.Clamp(-1.0f, quat.Z / mag, 1.0f);
+            var w = MathCore.Clamp(-1.0f, quat._w / mag, 1.0f);
+            var x = MathCore.Clamp(-1.0f, quat.X / mag, 1.0f);
+            var y = MathCore.Clamp(-1.0f, quat.Y / mag, 1.0f);
+            var z = MathCore.Clamp(-1.0f, quat.Z / mag, 1.0f);
             return new Quaternion(w, x, y, z);
         }
         
@@ -495,24 +481,11 @@ namespace Core.Geometry
             return new Vector3(x, y, z);
         }
 
-        /// <summary>
-        ///     Returns the hash code for this instance.
-        /// </summary>
-        /// <returns>
-        ///     A 32-bit signed integer that is the hash code for this instance.
-        /// </returns>
         public override int GetHashCode()
         {
             return X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode() ^ _w.GetHashCode();
         }
 
-        /// <summary>
-        ///     Indicates whether this instance and a specified object are equal.
-        /// </summary>
-        /// <param name="obj">Another object to compare to.</param>
-        /// <returns>
-        ///     true if obj and this instance are the same type and represent the same value; otherwise, false.
-        /// </returns>
         public override bool Equals(object obj)
         {
             if (!(obj is Quaternion))

@@ -69,7 +69,6 @@
     <Compile Include="Fem\Model.cs" />
     <Compile Include="Fem\Node.cs" />
     <Compile Include="Fem\PlanarStressSolver.cs" />
-    <Compile Include="Geometry\GeometryException.cs" />
     <Compile Include="Geometry\Point2.cs" />
     <Compile Include="Geometry\Point3.cs" />
     <Compile Include="Geometry\Quaternion.cs" />
@@ -78,10 +77,7 @@
     <Compile Include="Geometry\Size2.cs" />
     <Compile Include="Geometry\Vector2.cs" />
     <Compile Include="Geometry\Vector3.cs" />
-    <Compile Include="MathLib\Degrees.cs" />
     <Compile Include="MathLib\MathCore.cs" />
-    <Compile Include="MathLib\Matrix.cs" />
-    <Compile Include="MathLib\Radians.cs" />
     <Compile Include="MathLib\Matrix3x3.cs" />
     <Compile Include="MathLib\Matrix4x4.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

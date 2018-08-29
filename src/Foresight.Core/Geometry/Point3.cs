@@ -265,11 +265,6 @@ namespace Core.Geometry
             return false;
         }
 
-        /// <summary>
-        ///     Does this instance equal another objec
-        /// </summary>
-        /// <param name="obj">The obj.</param>
-        /// <returns></returns>
         public override bool Equals(object obj)
         {
             if (!(obj is Point3))
@@ -278,42 +273,9 @@ namespace Core.Geometry
             return (Point3) obj == this;
         }
 
-        /// <summary>
-        ///     Get the hashcode for this object
-        /// </summary>
-        /// <returns></returns>
         public override int GetHashCode()
         {
             return _x.GetHashCode() ^ _y.GetHashCode() ^ _z.GetHashCode();
-        }
-
-        /// <summary>
-        ///     Write point to string
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return $"[{_x:f},{_y:f},{_z:f}]";
-        }
-
-        /// <summary>
-        ///     Parses the specified string.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static Point3 Parse(string value)
-        {
-            if (value == null)
-                throw new ArgumentNullException(nameof(value));
-
-            var val = value.Substring(1, value.Length - 2);
-            var vals = val.Split(',');
-
-            var x = float.Parse(vals[0]);
-            var y = float.Parse(vals[1]);
-            var z = float.Parse(vals[2]);
-
-            return new Point3(x, y, z);
         }
 
         /// <summary>
@@ -327,16 +289,6 @@ namespace Core.Geometry
         public static Point3 Offset(Point3 p, float dx, float dy, float dz)
         {
             return new Point3(p._x + dx, p._y + dy, p._z + dz);
-        }
-
-        /// <summary>
-        ///     Distance from this point to supplied point
-        /// </summary>
-        /// <param name="other">The other.</param>
-        /// <returns></returns>
-        public float Distance(Point3 other)
-        {
-            return Distance(this, other);
         }
 
         /// <summary>

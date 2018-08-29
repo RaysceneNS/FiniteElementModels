@@ -136,10 +136,10 @@ namespace Core.Algorythm
             for (var i = 0; i < _orderedEntities.Count; i++)
             {
                 var entity = _orderedEntities[i];
-                if (entity is LineSegment2)
-                    points.AddRange(GetPoints((LineSegment2)entity, maxDistance, _reverts[i]));
-                if (entity is Arc2)
-                    points.AddRange(GetPoints((Arc2)entity, maxDistance, _reverts[i]));
+                if (entity is LineSegment2 segment2)
+                    points.AddRange(GetPoints(segment2, maxDistance, _reverts[i]));
+                if (entity is Arc2 arc2)
+                    points.AddRange(GetPoints(arc2, maxDistance, _reverts[i]));
             }
             //close the shape
             points.Add(points[0]);
@@ -201,7 +201,7 @@ namespace Core.Algorythm
             {
                 get
                 {
-                    double rads = Degrees.ToRadians(_endAngle);
+                    double rads = ToRadians(_endAngle);
                     var p = new Point2((float)Math.Cos(rads) * _radius, (float)Math.Sin(rads) * _radius);
                     return (Point2)(_matrix * (Point3)p);
                 }
@@ -223,7 +223,7 @@ namespace Core.Algorythm
             {
                 get
                 {
-                    double rads = Degrees.ToRadians(_startAngle);
+                    double rads = ToRadians(_startAngle);
                     var p = new Point2((float)Math.Cos(rads) * _radius, (float)Math.Sin(rads) * _radius);
                     return (Point2)(_matrix * (Point3)p);
                 }
@@ -231,8 +231,8 @@ namespace Core.Algorythm
 
             public Point2[] GetPoints(float elementSize, bool reverse)
             {
-                var radStartAngle = Degrees.ToRadians(_startAngle);
-                var radAngle = Degrees.ToRadians(DeltaAngle());
+                var radStartAngle = ToRadians(_startAngle);
+                var radAngle = ToRadians(DeltaAngle());
                 var arcLength = _radius * radAngle;
                 var elements = (int)Math.Ceiling(Math.Abs(arcLength) / elementSize);
                 var center = (Point2)_matrix.ExtractPosition();
@@ -270,6 +270,16 @@ namespace Core.Algorythm
             }
         }
 
+        /// <summary>
+        ///     Convert degrees to radians
+        /// </summary>
+        /// <param name="angle">The angle.</param>
+        /// <returns></returns>
+        private static float ToRadians(float angle)
+        {
+            return angle * (float)Math.PI / 180.0f;
+        }
+
         private struct LineSegment2
         {
             public LineSegment2(float x1, float y1, float x2, float y2)
@@ -279,7 +289,6 @@ namespace Core.Algorythm
             }
 
             public Point2 Vertex1 { get; }
-
             public Point2 Vertex2 { get; }
 
             public float Length

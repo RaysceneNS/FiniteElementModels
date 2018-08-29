@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.Text;
 using Core.Geometry;
 
 namespace Core.MathLib
@@ -45,15 +44,9 @@ namespace Core.MathLib
         internal readonly float M20, M21, M22, M23;
         private readonly float _m30, _m31, _m32, _m33;
 
-        /// <summary>
-        ///     Returns the identity MAtrix
-        /// </summary>
         public static readonly Matrix4X4 Identity = new Matrix4X4(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
-        /// <summary>
-        ///     Returns the zero matrix
-        /// </summary>
         public static readonly Matrix4X4 Zero = new Matrix4X4(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -228,14 +221,6 @@ namespace Core.MathLib
                 (right._m32 - left._m32) * amount + left._m32, (right._m33 - left._m33) * amount + left._m33);
         }
 
-        /// <summary>
-        ///     Returns an inverted 4d matrix.
-        /// </summary>
-        /// <returns></returns>
-        public Matrix4X4 Invert()
-        {
-            return Adjoint() * (1.0f / Determinant);
-        }
 
         /// <summary>
         ///     Inverts the specified m.
@@ -382,14 +367,6 @@ namespace Core.MathLib
                 left._m30 - right._m30, left._m31 - right._m31, left._m32 - right._m32, left._m33 - right._m33);
         }
 
-        /// <summary>
-        ///     Compares two Matrix4 instances for equality.
-        /// </summary>
-        /// <param name="left">The left.</param>
-        /// <param name="right">The right.</param>
-        /// <returns>
-        ///     true if the Matrix 4 instances are equal, false otherwise.
-        /// </returns>
         public static bool operator ==(Matrix4X4 left, Matrix4X4 right)
         {
             return left.M00 == right.M00 && left.M01 == right.M01 && left.M02 == right.M02 && left.M03 == right.M03 &&
@@ -398,14 +375,6 @@ namespace Core.MathLib
                    left._m30 == right._m30 && left._m31 == right._m31 && left._m32 == right._m32 && left._m33 == right._m33;
         }
 
-        /// <summary>
-        ///     Compares two Matrix4 instances for inequality.
-        /// </summary>
-        /// <param name="left">The left.</param>
-        /// <param name="right">The right.</param>
-        /// <returns>
-        ///     true if the Matrix 4 instances are not equal, false otherwise.
-        /// </returns>
         public static bool operator !=(Matrix4X4 left, Matrix4X4 right)
         {
             return !(left == right);
@@ -486,62 +455,6 @@ namespace Core.MathLib
         }
 
         /// <summary>
-        ///     Creates the transformation matrix from three points.
-        /// </summary>
-        /// <param name="origin">The origin.</param>
-        /// <param name="xAxisDir">X axis dir.</param>
-        /// <param name="yAxisDir">Y axis dir.</param>
-        /// <returns></returns>
-        public static Matrix4X4 ThreePoints(Point3 origin, Point3 xAxisDir, Point3 yAxisDir)
-        {
-            var a = yAxisDir;
-            var b = origin;
-            var c = xAxisDir;
-
-            var vecA = Vector3.Subtract(c, b);
-            var vecB = Vector3.Cross(vecA, Vector3.Subtract(a, b));
-            var vecC = Vector3.Cross(vecB, vecA);
-
-            vecA = vecA.Normalize();
-            vecC = vecC.Normalize();
-            vecB = vecB.Normalize();
-
-            return new Matrix4X4(
-                vecA.X, vecC.X, vecB.X, b.X,
-                vecA.Y, vecC.Y, vecB.Y, b.Y,
-                vecA.Z, vecC.Z, vecB.Z, b.Z,
-                0, 0, 0, 1);
-        }
-
-        /// <summary>
-        ///     Creates the translation matrix.
-        /// </summary>
-        /// <param name="vector">The vector.</param>
-        /// <returns></returns>
-        public static Matrix4X4 CreateTranslation(Vector3 vector)
-        {
-            return new Matrix4X4(
-                1.0f, 0.0f, 0.0f, vector.X,
-                0.0f, 1.0f, 0.0f, vector.Y,
-                0.0f, 0.0f, 1.0f, vector.Z,
-                0.0f, 0.0f, 0.0f, 1.0f);
-        }
-
-        /// <summary>
-        ///     Creates the translation matrix.
-        /// </summary>
-        /// <param name="point">The point.</param>
-        /// <returns></returns>
-        public static Matrix4X4 CreateTranslation(Point3 point)
-        {
-            return new Matrix4X4(
-                1.0f, 0.0f, 0.0f, point.X,
-                0.0f, 1.0f, 0.0f, point.Y,
-                0.0f, 0.0f, 1.0f, point.Z,
-                0.0f, 0.0f, 0.0f, 1.0f);
-        }
-
-        /// <summary>
         ///     Creates the translation matrix.
         /// </summary>
         /// <param name="x">X.</param>
@@ -565,19 +478,7 @@ namespace Core.MathLib
         {
             return new Vector3(M03, M13, M23);
         }
-
-        /// <summary>
-        ///     Sets the translation portion of this matrix.
-        /// </summary>
-        /// <param name="translation">The translation.</param>
-        public Matrix4X4 SetTranslation(Vector3 translation)
-        {
-            return new Matrix4X4(M00, M01, M02, translation.X,
-                M10, M11, M12, translation.Y,
-                M20, M21, M22, translation.Z,
-                _m30, _m31, _m32, _m33);
-        }
-
+        
         /// <summary>
         ///     Gets the position from the matrix.
         /// </summary>
@@ -915,34 +816,6 @@ namespace Core.MathLib
             zAxis = new Vector3(M02, M12, M22);
         }
 
-        /// <summary>
-        ///     Overrides the Object.ToString() method to provide a text representation of
-        ///     a Matrix4.
-        /// </summary>
-        /// <returns>A string representation of a vector3.</returns>
-        public override string ToString()
-        {
-            var sb = new StringBuilder();
-
-            sb.AppendFormat(" | {0} {1} {2} {3} |\n", M00, M01, M02, M03);
-            sb.AppendFormat(" | {0} {1} {2} {3} |\n", M10, M11, M12, M13);
-            sb.AppendFormat(" | {0} {1} {2} {3} |\n", M20, M21, M22, M23);
-            sb.AppendFormat(" | {0} {1} {2} {3} |\n", _m30, _m31, _m32, _m33);
-
-            return sb.ToString();
-        }
-
-        /// <summary>
-        ///     Provides a unique hash code based on the member variables of this
-        ///     class.  This should be done because the equality operators (==, !=)
-        ///     have been overriden by this class.
-        ///     <p />
-        ///     The standard implementation is a simple XOR operation between all local
-        ///     member variables.
-        /// </summary>
-        /// <returns>
-        ///     A 32-bit signed integer that is the hash code for this instance.
-        /// </returns>
         public override int GetHashCode()
         {
             return M00.GetHashCode() ^ M01.GetHashCode() ^ M02.GetHashCode() ^ M03.GetHashCode()
@@ -951,47 +824,12 @@ namespace Core.MathLib
                    ^ _m30.GetHashCode() ^ _m31.GetHashCode() ^ _m32.GetHashCode() ^ _m33.GetHashCode();
         }
 
-        /// <summary>
-        ///     Compares this Matrix to another object.  This should be done because the
-        ///     equality operators (==, !=) have been overriden by this class.
-        /// </summary>
-        /// <param name="obj">Another object to compare to.</param>
-        /// <returns>
-        ///     true if obj and this instance are the same type and represent the same value; otherwise, false.
-        /// </returns>
         public override bool Equals(object obj)
         {
             if (!(obj is Matrix4X4))
                 return false;
 
             return (Matrix4X4) obj == this;
-        }
-
-        /// <summary>
-        ///     Returns this matrix in a format compatible with open gl
-        /// </summary>
-        /// <returns></returns>
-        public float[] ToOpenGL()
-        {
-            return new[]
-            {
-                M00,
-                M10,
-                M20,
-                _m30, //0?
-                M01,
-                M11,
-                M21,
-                _m31, //0?
-                M02,
-                M12,
-                M22,
-                _m32, //0?
-                M03,
-                M13,
-                M23,
-                _m33 //1?
-            };
         }
     }
 }

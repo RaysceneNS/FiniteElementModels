@@ -13,14 +13,7 @@ namespace Core.MathLib
         internal readonly float M11, M12;
         internal readonly float M20, M21, M22;
 
-        /// <summary>
-        ///     The identity matrix
-        /// </summary>
         public static readonly Matrix3X3 Identity = new Matrix3X3(1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-
-        /// <summary>
-        ///     The zero matrix
-        /// </summary>
         public static readonly Matrix3X3 Zero = new Matrix3X3(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
 
         /// <summary>
@@ -209,12 +202,6 @@ namespace Core.MathLib
                 -matrix.M20, -matrix.M21, -matrix.M22);
         }
 
-        /// <summary>
-        ///     Test two matrices for (value) equality
-        /// </summary>
-        /// <param name="left">The left.</param>
-        /// <param name="right">The right.</param>
-        /// <returns>The result of the operator.</returns>
         public static bool operator ==(Matrix3X3 left, Matrix3X3 right)
         {
             return left.M00 == right.M00 && left.M01 == right.M01 && left.M02 == right.M02 &&
@@ -222,12 +209,6 @@ namespace Core.MathLib
                    left.M20 == right.M20 && left.M21 == right.M21 && left.M22 == right.M22;
         }
 
-        /// <summary>
-        ///     Implements the operator !=.
-        /// </summary>
-        /// <param name="left">The left.</param>
-        /// <param name="right">The right.</param>
-        /// <returns>The result of the operator.</returns>
         public static bool operator !=(Matrix3X3 left, Matrix3X3 right)
         {
             return !(left == right);
@@ -287,33 +268,6 @@ namespace Core.MathLib
             }
         }
 
-        /// <summary>
-        ///     Overrides the Object.ToString() method to provide a text representation of
-        ///     a Matrix4.
-        /// </summary>
-        /// <returns>A string representation of a vector3.</returns>
-        public override string ToString()
-        {
-            var builder = new StringBuilder();
-
-            builder.AppendFormat(" | {0} {1} {2} |\r\n", M00, M01, M02);
-            builder.AppendFormat(" | {0} {1} {2} |\r\n", M10, M11, M12);
-            builder.AppendFormat(" | {0} {1} {2} |", M20, M21, M22);
-
-            return builder.ToString();
-        }
-
-        /// <summary>
-        ///     Provides a unique hash code based on the member variables of this
-        ///     class.  This should be done because the equality operators (==, !=)
-        ///     have been overriden by this class.
-        ///     <p />
-        ///     The standard implementation is a simple XOR operation between all local
-        ///     member variables.
-        /// </summary>
-        /// <returns>
-        ///     A 32-bit signed integer that is the hash code for this instance.
-        /// </returns>
         public override int GetHashCode()
         {
             // There are probably better distributions out there than this one...
@@ -322,14 +276,6 @@ namespace Core.MathLib
                    ^ M20.GetHashCode() ^ M21.GetHashCode() ^ M22.GetHashCode();
         }
 
-        /// <summary>
-        ///     Compares this Matrix to another object.  This should be done because the
-        ///     equality operators (==, !=) have been overriden by this class.
-        /// </summary>
-        /// <param name="obj">Another object to compare to.</param>
-        /// <returns>
-        ///     true if obj and this instance are the same type and represent the same value; otherwise, false.
-        /// </returns>
         public override bool Equals(object obj)
         {
             if (!(obj is Matrix3X3))

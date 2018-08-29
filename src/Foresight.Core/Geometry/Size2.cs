@@ -225,26 +225,9 @@ namespace Core.Geometry
             return ef._width == _width && ef._height == _height && ef.GetType().Equals(GetType());
         }
 
-        /// <summary>
-        ///     Returns the hash code for this instance.
-        /// </summary>
-        /// <returns>
-        ///     A 32-bit signed integer that is the hash code for this instance.
-        /// </returns>
         public override int GetHashCode()
         {
             return base.GetHashCode();
-        }
-
-        /// <summary>
-        ///     Returns the fully qualified type name of this instance.
-        /// </summary>
-        /// <returns>
-        ///     A <see cref="T:System.String"></see> containing a fully qualified type name.
-        /// </returns>
-        public override string ToString()
-        {
-            return "{Width=" + _width + ", Height=" + _height + "}";
         }
     }
 }

@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
 using System.Security.Permissions;
 using Tao.OpenGl;
 using Tao.Platform.Windows;
@@ -12,10 +11,6 @@ namespace UI.Controls.Viewport
         private readonly IntPtr _handle;
         private bool _disposed;
 
-        /// <summary>
-        ///     Creates the OpenGL context
-        /// </summary>
-        /// <param name="handle">The handle to bind this context to</param>
         [SecurityPermission(SecurityAction.LinkDemand, Flags = SecurityPermissionFlag.UnmanagedCode)]
         internal GLContext(IntPtr handle)
         {
@@ -101,16 +96,7 @@ namespace UI.Controls.Viewport
             MakeCurrent();
         }
 
-        /// <summary>
-        ///     Return the device context pointer
-        /// </summary>
-        /// <value>The DeviceContext.</value>
         internal IntPtr DeviceContext { get; private set; }
-
-        /// <summary>
-        ///     Return the Rendering Context pointer
-        /// </summary>
-        /// <value>The RenderingContext.</value>
         internal IntPtr RenderingContext { get; private set; }
         
         public void Dispose()
@@ -153,37 +139,16 @@ namespace UI.Controls.Viewport
             }
         }
 
-        /// <summary>
-        ///     Makes this rendering context current if it is not already
-        /// </summary>
         internal void MakeCurrent()
         {
             if (Wgl.wglGetCurrentContext() != RenderingContext)
                 Wgl.wglMakeCurrent(DeviceContext, RenderingContext);
         }
 
-        /// <summary>
-        ///     Swaps the offscreen buffer for the onscreen one
-        /// </summary>
         internal void SwapBuffers()
         {
             if (Gdi.SwapBuffersFast(DeviceContext) == Gl.GL_FALSE)
                 throw new GLContextException("Call to SwapBuffersFast() failed.");
-        }
-    }
-
-
-    [Serializable]
-    public class GLContextException : Exception
-    {
-        public GLContextException(string message)
-            : base(message)
-        {
-        }
-
-        protected GLContextException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
         }
     }
 }

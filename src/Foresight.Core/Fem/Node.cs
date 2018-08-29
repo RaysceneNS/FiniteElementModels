@@ -100,7 +100,7 @@ namespace Core.Fem
         
         public float[] Stress { get; private set; }
 
-        public float SX
+        public float StressX
         {
             get
             {
@@ -108,7 +108,7 @@ namespace Core.Fem
             }
         }
 
-        public float SY
+        public float StressY
         {
             get
             {
@@ -116,7 +116,7 @@ namespace Core.Fem
             }
         }
 
-        public float UX
+        public float FreedomX
         {
             get
             {
@@ -124,7 +124,7 @@ namespace Core.Fem
             }
         }
 
-        public float UY
+        public float FreedomY
         {
             get
             {

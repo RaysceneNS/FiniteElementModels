@@ -30,9 +30,6 @@ namespace UI.Controls.Viewport.Overlay
             _position = new Point2((float) winX, (float) winY);
         }
 
-        /// <summary>
-        ///     Draws this instance.
-        /// </summary>
         internal void Draw()
         {
             Draw((int) _position.X, (int) _position.Y);

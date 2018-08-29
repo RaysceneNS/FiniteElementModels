@@ -138,12 +138,6 @@ namespace UI.Controls.Viewport
             }
         }
 
-        /// <summary>
-        ///     Prints the specified text.
-        /// </summary>
-        /// <param name="text">The text.</param>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
         private void Print(string text, float x, float y)
         {
             Gl.glPushAttrib(Gl.GL_ENABLE_BIT | Gl.GL_LIST_BIT);
