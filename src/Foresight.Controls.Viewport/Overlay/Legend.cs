@@ -1,7 +1,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using Core.MathLib;
+using Core.Geometry;
 
 namespace UI.Controls.Viewport.Overlay
 {
@@ -22,16 +22,6 @@ namespace UI.Controls.Viewport.Overlay
             _title = string.Empty;
             _valueFont = new Font("Tahoma", 8.25f, FontStyle.Regular);
             _titleFont = new Font("MS Sans Serif", 8.25f, FontStyle.Bold);
-        }
-
-        public ColorScale ColorScale
-        {
-            get { return _colorScale; }
-            set
-            {
-                _colorScale = value;
-                SetDirty();
-            }
         }
 
         public float MaxValue
@@ -121,8 +111,7 @@ namespace UI.Controls.Viewport.Overlay
 
                         // draw the label for the scalar
                         var val = _minValue + (NUMBER_OF_VALUES - i) * (_maxValue - _minValue) / NUMBER_OF_VALUES;
-                        graphics.DrawString(val.ToString(format), _valueFont, textBrush, labelOffsetX + border,
-                            y + border);
+                        graphics.DrawString(val.ToString(format), _valueFont, textBrush, labelOffsetX + border, y + border);
                     }
                 }
 

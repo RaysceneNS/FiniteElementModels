@@ -41,10 +41,6 @@ namespace UI.Controls.Viewport
 
         public void Clear()
         {
-            foreach (var entity in this)
-            {
-                entity.Dispose();
-            }
             _entities.Clear();
 
             OnListChanged(new EventArgs());

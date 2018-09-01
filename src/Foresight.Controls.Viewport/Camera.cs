@@ -1,12 +1,11 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using Core.Geometry;
-using Core.MathLib;
 using Tao.OpenGl;
 
 namespace UI.Controls.Viewport
 {
-    internal abstract class Camera
+    internal class Camera
     {
         private Point3 _modelCenter;
         private float _modelExtent;
@@ -19,6 +18,16 @@ namespace UI.Controls.Viewport
             ModelDistance = 100f;
             DegreesOfFreedom = Axes.Xyz;
         }
+
+        [Category("Camera (Perspective")]
+        public float FieldOfView { get; set; } = 60.0f;
+
+        [Category("Camera (Perspective")]
+        public float Near { get; set; } = 10f;
+
+        [Category("Camera (Perspective")]
+        public float Far { get; set; } = 500f;
+
 
         internal void Reset()
         {
@@ -97,13 +106,10 @@ namespace UI.Controls.Viewport
 
         internal void Zoom(float amount)
         {
-            var currentZoomFactor = CurrentZoomFactor;
-
             //constrain the minimum and maximum zoom extents
-            var h = MathCore.Clamp(0.0001f, _zoomSize.Height + amount * currentZoomFactor, 10000f);
+            var h = MathCore.Clamp(0.0001f, _zoomSize.Height + amount * CurrentZoomFactor, 10000f);
             // maintain the aspect ratio
             var w = _zoomSize.Height * (ViewportWidth / (float) ViewportHeight);
-
             _zoomSize = new Size2(w,h);
         }
 
@@ -191,6 +197,9 @@ namespace UI.Controls.Viewport
 
         internal virtual void TransformProjectionMatrix()
         {
+            var aspectRatio = ViewportWidth / (float)ViewportHeight;
+            Glu.gluPerspective(FieldOfView, aspectRatio, Near, Far);
+
             // set the zoom rect
             int[] viewport = {0, 0, ViewportWidth, ViewportHeight};
             Glu.gluPickMatrix(_panPosition.X, _panPosition.Y, _zoomSize.Width, _zoomSize.Height, viewport);
@@ -228,26 +237,6 @@ namespace UI.Controls.Viewport
 
         public int ViewportHeight { get; private set; }
 
-        public float ModelDistance { get; set; }
-    }
-
-    internal class CameraPerspective : Camera
-    {
-        [Category("Camera (Perspective")]
-        public float FieldOfView { get; set; } = 60.0f;
-
-        [Category("Camera (Perspective")]
-        public float Near { get; set; } = 10f;
-
-        [Category("Camera (Perspective")]
-        public float Far { get; set; } = 500f;
-
-        internal override void TransformProjectionMatrix()
-        {
-            base.TransformProjectionMatrix();
-
-            var aspectRatio = ViewportWidth / (float)ViewportHeight;
-            Glu.gluPerspective(FieldOfView, aspectRatio, Near, Far);
-        }
+        public float ModelDistance { get; }
     }
 }

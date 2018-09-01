@@ -99,23 +99,7 @@ namespace Core.Fem
         }
         
         public float[] Stress { get; private set; }
-
-        public float StressX
-        {
-            get
-            {
-                return this.Stress[0];
-            }
-        }
-
-        public float StressY
-        {
-            get
-            {
-                return this.Stress[1];
-            }
-        }
-
+        
         public float FreedomX
         {
             get

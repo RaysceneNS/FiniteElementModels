@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Security.Permissions;
 using System.Windows.Forms;
 using Core.Geometry;
-using Core.MathLib;
 using Tao.OpenGl;
 using UI.Controls.Viewport.Overlay;
 
@@ -23,8 +21,6 @@ namespace UI.Controls.Viewport
         private DrawingModes _drawingMode;
         private Vector3 _rotationPosition;
         private Point2 _startPoint, _endPoint;
-        private readonly List<LabelBase> _labels;
-        private readonly Legend _legend;
 
         public event EventHandler<EventArgs> ActionChanged;
 
@@ -43,14 +39,13 @@ namespace UI.Controls.Viewport
             // create a light for the model
             _modelLight = new Light(Gl.GL_LIGHT0, 0.65f, 0.75f, 0.1f, new Point3(-50F, -150F, 100F));
 
-            _labels = new List<LabelBase>();
+            Labels = new List<LabelBase>();
             _drawingMode = DrawingModes.Shaded;
 
-            // default to a perspective based camera
-            _camera = new CameraPerspective();
+            _camera = new Camera();
 
             // create the legend, the legend is situated near the top left of the viewport 
-            _legend = new Legend {Visible = false};
+            Legend = new Legend {Visible = false};
             
             //Create Custom Cursors
             _zoomCursor = new Cursor(typeof(Viewport), "zoom.cur");
@@ -228,11 +223,8 @@ namespace UI.Controls.Viewport
 
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public Legend Legend
-        {
-            get { return _legend; }
-        }
-        
+        public Legend Legend { get; }
+
         [Browsable(false)]
         public ActionType Action
         {
@@ -264,10 +256,7 @@ namespace UI.Controls.Viewport
         public SceneObjectCollection SceneObjects { get; }
 
         [Browsable(false)]
-        public List<LabelBase> Labels
-        {
-            get { return _labels; }
-        }
+        public List<LabelBase> Labels { get; }
 
         [Description("Drawing mode.")]
         [Category("Appearance")]
@@ -283,17 +272,10 @@ namespace UI.Controls.Viewport
         
         private void DrawAll()
         {
-            // Clear Screen And Depth Buffer
             Gl.glClearColor(BackColor.R / 255f, BackColor.G / 255f, BackColor.B / 255f, BackColor.A / 255f);
             Gl.glClear(Gl.GL_COLOR_BUFFER_BIT | Gl.GL_DEPTH_BUFFER_BIT);
-
-            // draw the 3d entities
             Draw3D();
-
-            // draw the 2d portions of the scene this includes the zoom boxes, legend, progressbar and labels
             Draw2D();
-            
-            // flush 'er down
             Gl.glFlush();
         }
 
@@ -335,14 +317,8 @@ namespace UI.Controls.Viewport
                     Legend.Draw(0, height - 200);
                 
                 // draw selection boxes		
-                if (MouseButtons == MouseButtons.Left)
-                    switch (_action)
-                    {
-                        case ActionType.ZoomWindow:
-                            DrawZoomWindowBox(new Point2(_endPoint.X, height - _endPoint.Y),
-                                new Point2(_startPoint.X, height - _startPoint.Y));
-                            break;
-                    }
+                if (MouseButtons == MouseButtons.Left && _action == ActionType.ZoomWindow)
+                    DrawZoomWindowBox(new Point2(_endPoint.X, height - _endPoint.Y), new Point2(_startPoint.X, height - _startPoint.Y));
 
                 Gl.glMatrixMode(Gl.GL_PROJECTION);
             }
@@ -441,8 +417,6 @@ namespace UI.Controls.Viewport
                 Gl.glDisable(Gl.GL_DEPTH_TEST);
                 Gl.glDisable(Gl.GL_LIGHTING);
                 Gl.glLineWidth(1f);
-
-                // draw a box in XOR mode
                 Gl.glEnable(Gl.GL_COLOR_LOGIC_OP);
                 Gl.glLogicOp(Gl.GL_XOR);
                 Gl.glColor3ub(0xFF, 0xFF, 0xFF);
@@ -460,10 +434,8 @@ namespace UI.Controls.Viewport
 
         protected override void OnMouseWheel(MouseEventArgs e)
         {
-            float amount = e.Delta / -4f;
-            _camera.Zoom(amount);
+            _camera.Zoom(e.Delta / -4f);
             Invalidate();
-
             base.OnMouseWheel(e);
         }
 
@@ -471,9 +443,8 @@ namespace UI.Controls.Viewport
         {
             if (_action == ActionType.ZoomWindow && _startPoint != _endPoint)
             {
-                var p1 = new Point2(_startPoint.X, Height - _startPoint.Y);
-                var p2 = new Point2(_endPoint.X, Height - _endPoint.Y);
-                _camera.ZoomWindow(new AxisAlignedBox2(p1, p2));
+                _camera.ZoomWindow(new AxisAlignedBox2(new Point2(_startPoint.X, Height - _startPoint.Y), 
+                    new Point2(_endPoint.X, Height - _endPoint.Y)));
                 Invalidate();
             }
 
@@ -565,20 +536,16 @@ namespace UI.Controls.Viewport
             if (SceneObjects.Count <= 0)
                 return;
 
-            // reset the pan and zoom 
             _camera.Reset();
 
-            // set the project matrix
             Gl.glMatrixMode(Gl.GL_PROJECTION);
             Gl.glLoadIdentity();
             _camera.TransformProjectionMatrix();
 
-            // set the modelview matrix
             Gl.glMatrixMode(Gl.GL_MODELVIEW);
             Gl.glLoadIdentity();
             _camera.TransformModelViewMatrix();
 
-            // calculate the model display extents
             var boundingRect = AxisAlignedBox2.Empty;
             foreach (var entity in SceneObjects)
             {
@@ -589,9 +556,6 @@ namespace UI.Controls.Viewport
                 else if (rect != AxisAlignedBox2.Empty)
                     boundingRect = AxisAlignedBox2.Union(boundingRect, rect);
             }
-
-            // all objects should be able to produce 2d bounding rects
-            Debug.Assert(boundingRect != AxisAlignedBox2.Empty);
 
             if (boundingRect != AxisAlignedBox2.Empty)
             {

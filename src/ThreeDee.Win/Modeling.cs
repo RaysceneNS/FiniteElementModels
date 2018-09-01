@@ -16,21 +16,10 @@ namespace UI.Windows
         private static Model BracketModel(IProgress<TaskProgress> progressReport)
         {
             var mesher = new BasicMesher()
-                .AddLoop(new LoopBuilder()
-                    .AddLineSegment(0, 0, 50, 0)
-                    .AddLineSegment(50, 0, 50, 10)
-                    .AddLineSegment(50, 10, 0, 10)
-                    .AddLineSegment(0, 10, 0, 0)
-                    .Build(true, 1))
-                .AddLoop(new LoopBuilder()
-                    .AddArc(26, 5, 4, 0, 360)
-                    .Build(true, 1))
-                .AddLoop(new LoopBuilder()
-                    .AddArc(9, 5, 4, 0, 360)
-                    .Build(true, 1))
-                .AddLoop(new LoopBuilder()
-                    .AddArc(41, 5, 4, 0, 360)
-                    .Build(true, 1));
+                .AddLoop(new LoopBuilder().AddRectangle(25, 5, 25, 5).Build())
+                .AddLoop(new LoopBuilder().AddCircle(26, 5, 4).Build())
+                .AddLoop(new LoopBuilder().AddCircle(9, 5, 4).Build())
+                .AddLoop(new LoopBuilder().AddCircle(41, 5, 4).Build());
 
             // Perform a triangulation within the boundaries of the shape
             var model = mesher.TriangulateIteratively(progressReport);
@@ -47,8 +36,10 @@ namespace UI.Windows
                     node.FixAll();
                 }
 
-                if (node.X > 20 && node.X < 32 && Math.Abs(node.Y - 10) < TOLERANCE)
-                    node.ApplyLoad(0, -1500);
+                if (node.X > 20 && node.X < 26 && Math.Abs(node.Y - 10) < TOLERANCE)
+                    node.ApplyLoad(0, (node.X - 20) * -250);
+                if (node.X >= 26 && node.X < 31 && Math.Abs(node.Y - 10) < TOLERANCE)
+                    node.ApplyLoad(0, (31 - node.X) * -250);
             }
 
             return model;
@@ -102,8 +93,7 @@ namespace UI.Windows
         private static void AddLabels(Viewport viewport, Model fm)
         {
             viewport.Labels.Clear();
-
-            //label max displacement
+            
             viewport.Labels.Add(new FlagLabel(
                 fm.MaxNode.X + fm.MaxNode.FreedomX,
                 fm.MaxNode.Y + fm.MaxNode.FreedomY,

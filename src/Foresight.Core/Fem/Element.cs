@@ -110,7 +110,6 @@ namespace Core.Fem
                     throw new ArgumentNullException(nameof(b));
 
                 var m = new float[a.GetLength(0), b.GetLength(1)];
-
                 for (var i = 0; i < a.GetLength(0); i++)
                 {
                     for (var j = 0; j < b.GetLength(1); j++)

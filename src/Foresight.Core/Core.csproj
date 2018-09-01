@@ -75,11 +75,8 @@
     <Compile Include="Geometry\AxisAlignedBox2.cs" />
     <Compile Include="Geometry\AxisAlignedBox3.cs" />
     <Compile Include="Geometry\Size2.cs" />
-    <Compile Include="Geometry\Vector2.cs" />
     <Compile Include="Geometry\Vector3.cs" />
-    <Compile Include="MathLib\MathCore.cs" />
-    <Compile Include="MathLib\Matrix3x3.cs" />
-    <Compile Include="MathLib\Matrix4x4.cs" />
+    <Compile Include="Geometry\MathCore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

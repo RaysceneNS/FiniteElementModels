@@ -34,14 +34,8 @@ namespace UI.Controls.Viewport
 
         public void SwitchOn()
         {
-            // set the properties for this light
             Gl.glEnable(_lightIndex);
-
-            // the value 1 in the z parameter indicates that the light is sourced from the position, if we had
-            // used zero here it would mean that the light is infinitely far away and all the rays would be parallel
             Gl.glLightfv(_lightIndex, Gl.GL_POSITION, new[] {_position.X, _position.Z, -_position.Y, 1f});
-
-            // set the light intensity values
             Gl.glLightfv(_lightIndex, Gl.GL_AMBIENT, new[] {_ambientLevel, _ambientLevel, _ambientLevel, 1f});
             Gl.glLightfv(_lightIndex, Gl.GL_DIFFUSE, new[] {_diffuseLevel, _diffuseLevel, _diffuseLevel, 1f});
             Gl.glLightfv(_lightIndex, Gl.GL_SPECULAR, new[] {_specularLevel, _specularLevel, _specularLevel, 1f});

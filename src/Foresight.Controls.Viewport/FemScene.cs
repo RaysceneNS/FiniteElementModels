@@ -6,7 +6,7 @@ using Tao.OpenGl;
 
 namespace UI.Controls.Viewport
 {
-    public class FemScene : SceneObject
+    public class FemScene : SceneObject, IDisposable
     {
         private readonly Model _model;
         private int _edgeDisplayList, _elementList, _meshList;
@@ -166,24 +166,34 @@ namespace UI.Controls.Viewport
             Gl.glCallList(this._meshList);
         }
 
-        protected override void Dispose(bool disposing)
+
+        public void Dispose()
         {
-            base.Dispose(disposing);
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            if (disposing)
-            {
-                if (this._meshList != 0)
-                    Gl.glDeleteLists(this._meshList, 1);
-                this._meshList = 0;
+        ~FemScene()
+        {
+            Dispose(false);
+        }
 
-                if (this._elementList != 0)
-                    Gl.glDeleteLists(this._elementList, 1);
-                this._elementList = 0;
+        private void Dispose(bool disposing)
+        {
+            if (!disposing)
+                return;
 
-                if (this._edgeDisplayList != 0)
-                    Gl.glDeleteLists(this._edgeDisplayList, 1);
-                this._edgeDisplayList = 0;
-            }
+            if (this._meshList != 0)
+                Gl.glDeleteLists(this._meshList, 1);
+            this._meshList = 0;
+
+            if (this._elementList != 0)
+                Gl.glDeleteLists(this._elementList, 1);
+            this._elementList = 0;
+
+            if (this._edgeDisplayList != 0)
+                Gl.glDeleteLists(this._edgeDisplayList, 1);
+            this._edgeDisplayList = 0;
         }
 
         internal override void Compile()

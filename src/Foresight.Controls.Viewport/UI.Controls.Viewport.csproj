@@ -87,7 +87,6 @@
     <Compile Include="Light.cs" />
     <Compile Include="OrientationIndicator.cs" />
     <Compile Include="SceneObjectCollection.cs" />
-    <Compile Include="Overlay\Label.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

@@ -122,9 +122,9 @@ namespace Core.Algorythm
 
                         _faces.Remove(first);
                     }
+
                     first = next;
-                }
-                while (first != null);
+                } while (first != null);
 
                 var edgeNode = edges.First;
                 while (edgeNode != null)
@@ -133,6 +133,7 @@ namespace Core.Algorythm
                     _faces.AddLast(new TriangleFace(edge.v1, edge.v2, index));
                     edgeNode = edgeNode.Next;
                 }
+
                 index++;
             }
 
@@ -146,39 +147,38 @@ namespace Core.Algorythm
                     _faces.Remove(first);
 
                 first = next;
-            }
-            while (first != null);
+            } while (first != null);
 
 
             _vertices.RemoveRange(_vertices.Count - 3, 3);
-            if (_faces.Count > 0 && _loops.Count > 0)
+            if (_faces.Count <= 0 || _loops.Count <= 0)
+                return;
+
+            first = _faces.First;
+            while (first != null)
             {
-                first = _faces.First;
-                while (first != null)
-                {
-                    var face = first.Value;
-                    first = first.Next;
+                var face = first.Value;
+                first = first.Next;
 
-                    var v1 = face.v1;
-                    var v2 = face.v2;
-                    var v3 = face.v3;
+                var v1 = face.v1;
+                var v2 = face.v2;
+                var v3 = face.v3;
 
-                    var p1 = _vertices[v1];
-                    var p1X = p1.X;
-                    var p1Y = p1.Y;
+                var p1 = _vertices[v1];
+                var p1X = p1.X;
+                var p1Y = p1.Y;
 
-                    var p2 = _vertices[v2];
-                    var p2X = p2.X;
-                    var p2Y = p2.Y;
+                var p2 = _vertices[v2];
+                var p2X = p2.X;
+                var p2Y = p2.Y;
 
-                    var p3 = _vertices[v3];
-                    var p3X = p3.X;
-                    var p3Y = p3.Y;
+                var p3 = _vertices[v3];
+                var p3X = p3.X;
+                var p3Y = p3.Y;
 
-                    var newPoint = new Point2((p1X + p2X + p3X) / 3f, (p1Y + p2Y + p3Y) / 3f);
-                    if (!InsidePolygons(newPoint, _loops))
-                        _faces.Remove(face);
-                }
+                var newPoint = new Point2((p1X + p2X + p3X) / 3f, (p1Y + p2Y + p3Y) / 3f);
+                if (!InsidePolygons(newPoint, _loops))
+                    _faces.Remove(face);
             }
         }
 
@@ -277,7 +277,7 @@ namespace Core.Algorythm
                     if (p2.Y <= pTest.Y && (p2.X - p1.X) * (pTest.Y - p1.Y) - (pTest.X - p1.X) * (p2.Y - p1.Y) <= 0f)
                         num--;
                 }
-                else // p1.Y <= pTest.Y
+                else
                 {
                     if (p2.Y > pTest.Y && (p2.X - p1.X) * (pTest.Y - p1.Y) - (pTest.X - p1.X) * (p2.Y - p1.Y) >= 0f)
                         num++;
@@ -343,37 +343,31 @@ namespace Core.Algorythm
         /// <summary>
         ///     Gets the length of the min edge.
         /// </summary>
-        /// <value>The length of the min edge.</value>
         public double MinEdgeLength { get; private set; }
 
         /// <summary>
         ///     Gets the length of the max edge.
         /// </summary>
-        /// <value>The length of the max edge.</value>
         public double MaxEdgeLength { get; private set; }
 
         /// <summary>
         ///     Gets the min element quality.
         /// </summary>
-        /// <value>The min element quality.</value>
         public double MinElementQuality { get; private set; }
 
         /// <summary>
         ///     Gets the size of the element.
         /// </summary>
-        /// <scalar>The size of the element.</scalar>
         public float ElementSize { get; }
 
         /// <summary>
         ///     Gets or sets the smoothing passes.
         /// </summary>
-        /// <scalar>The smoothing passes.</scalar>
         public int SmoothingPasses { get; }
 
         /// <summary>
         ///     Gets or sets the smoothing mode.
         /// </summary>
-        /// <scalar>The smoothing mode.</scalar>
         public SmoothingMode SmoothingMode { get; }
 
         /// <summary>

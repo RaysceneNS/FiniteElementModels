@@ -17,24 +17,11 @@ namespace UI.Controls.Viewport
             _handle = handle;
 
             var descriptor = new Gdi.PIXELFORMATDESCRIPTOR();
-
-            // size of this pfd
             descriptor.nSize = (short) Marshal.SizeOf(descriptor);
-
-            // version number must always be 1
             descriptor.nVersion = 1;
-
-            // support window, support OpenGL, double buffered
-            descriptor.dwFlags = Gdi.PFD_DRAW_TO_WINDOW | Gdi.PFD_SUPPORT_OPENGL | Gdi.PFD_DOUBLEBUFFER |
-                                 Gdi.PFD_SWAP_EXCHANGE;
-
-            // RGBA type
+            descriptor.dwFlags = Gdi.PFD_DRAW_TO_WINDOW | Gdi.PFD_SUPPORT_OPENGL | Gdi.PFD_DOUBLEBUFFER | Gdi.PFD_SWAP_EXCHANGE;
             descriptor.iPixelType = Gdi.PFD_TYPE_RGBA;
-
-            // bit color depth
             descriptor.cColorBits = 32;
-
-            // color bits and shift bits ignored
             descriptor.cRedBits = 0;
             descriptor.cRedShift = 0;
             descriptor.cGreenBits = 0;
@@ -43,28 +30,16 @@ namespace UI.Controls.Viewport
             descriptor.cBlueShift = 0;
             descriptor.cAlphaBits = 0;
             descriptor.cAlphaShift = 0;
-
-            // no accumulation buffer, accum bits ignored
             descriptor.cAccumBits = 0;
             descriptor.cAccumRedBits = 0;
             descriptor.cAccumGreenBits = 0;
             descriptor.cAccumBlueBits = 0;
             descriptor.cAccumAlphaBits = 0;
-
-            //depth buffer
             descriptor.cDepthBits = 24;
-            //stencil buffer
             descriptor.cStencilBits = 8;
-            // no auxiliary buffer
             descriptor.cAuxBuffers = 0;
-
-            // main layer
             descriptor.iLayerType = Gdi.PFD_MAIN_PLANE;
-
-            // reserved
             descriptor.bReserved = 0;
-
-            // layer masks ignored
             descriptor.dwLayerMask = 0;
             descriptor.dwVisibleMask = 0;
             descriptor.dwDamageMask = 0;
@@ -84,8 +59,7 @@ namespace UI.Controls.Viewport
 
             // Are we not able to set the pixel format?
             if (!Gdi.SetPixelFormat(DeviceContext, pixelFormat, ref descriptor))
-                throw new GLContextException("Can not set the chosen PixelFormat. Chosen PixelFormat was " +
-                                             pixelFormat + ".");
+                throw new GLContextException($"Can not set the chosen PixelFormat. Chosen PixelFormat was {pixelFormat}.");
 
             // Attempt to get the rendering context
             RenderingContext = Wgl.wglCreateContext(DeviceContext);

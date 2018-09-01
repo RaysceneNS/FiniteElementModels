@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Core.Geometry;
-using Core.MathLib;
 
 namespace Core.Algorythm
 {
@@ -51,6 +50,21 @@ namespace Core.Algorythm
         public LoopBuilder AddArc(float xCenter, float yCenter, float radius, float startAngle, float endAngle)
         {
             AddEntity(new Arc2(xCenter, yCenter, radius, startAngle, endAngle));
+            return this;
+        }
+
+        public LoopBuilder AddCircle(float xCenter, float yCenter, float radius)
+        {
+            AddEntity(new Arc2(xCenter, yCenter, radius, 0, 360));
+            return this;
+        }
+
+        public LoopBuilder AddRectangle(float xCenter, float yCenter, float width, float height)
+        {
+            AddLineSegment(xCenter - width, yCenter - height, xCenter + width, yCenter - height); //bl -> br
+            AddLineSegment(xCenter + width, yCenter - height, xCenter + width, yCenter + height); // br -> tr
+            AddLineSegment(xCenter + width, yCenter + height, xCenter - width, yCenter + height); // tr -> tl
+            AddLineSegment(xCenter - width, yCenter + height, xCenter - width, yCenter - height); // tl -> bl
             return this;
         }
 
@@ -129,7 +143,7 @@ namespace Core.Algorythm
         /// <param name="clockwise">if set to <c>true</c> [clockwise].</param>
         /// <param name="maxDistance">The max distance.</param>
         /// <returns></returns>
-        public Point2[] Build(bool clockwise, float maxDistance)
+        public Point2[] Build(bool clockwise = true, float maxDistance = 1)
         {
             // construct a pointset from all the entities
             var points = new List<Point2>();
@@ -186,15 +200,17 @@ namespace Core.Algorythm
         private struct Arc2
         {
             private readonly float _endAngle, _startAngle;
-            private Matrix4X4 _matrix;
             private readonly float _radius;
+            private readonly float _yCenter;
+            private readonly float _xCenter;
 
             public Arc2(float xCenter, float yCenter, float radius, float startAngle, float endAngle)
             {
                 _radius = radius;
                 _startAngle = startAngle;
                 _endAngle = endAngle;
-                _matrix = Matrix4X4.CreateTranslation(xCenter, yCenter, 0);
+                _xCenter = xCenter;
+                _yCenter = yCenter;
             }
 
             public Point2 End
@@ -203,7 +219,17 @@ namespace Core.Algorythm
                 {
                     double rads = ToRadians(_endAngle);
                     var p = new Point2((float)Math.Cos(rads) * _radius, (float)Math.Sin(rads) * _radius);
-                    return (Point2)(_matrix * (Point3)p);
+                    return new Point2(p.X + _xCenter, p.Y + _yCenter);
+                }
+            }
+
+            public Point2 Start
+            {
+                get
+                {
+                    double rads = ToRadians(_startAngle);
+                    var p = new Point2((float)Math.Cos(rads) * _radius, (float)Math.Sin(rads) * _radius);
+                    return new Point2(p.X + _xCenter, p.Y + _yCenter);
                 }
             }
 
@@ -219,24 +245,13 @@ namespace Core.Algorythm
                 return angle;
             }
 
-            public Point2 Start
-            {
-                get
-                {
-                    double rads = ToRadians(_startAngle);
-                    var p = new Point2((float)Math.Cos(rads) * _radius, (float)Math.Sin(rads) * _radius);
-                    return (Point2)(_matrix * (Point3)p);
-                }
-            }
-
             public Point2[] GetPoints(float elementSize, bool reverse)
             {
                 var radStartAngle = ToRadians(_startAngle);
                 var radAngle = ToRadians(DeltaAngle());
                 var arcLength = _radius * radAngle;
                 var elements = (int)Math.Ceiling(Math.Abs(arcLength) / elementSize);
-                var center = (Point2)_matrix.ExtractPosition();
-
+                
                 var points = new Point2[elements];
                 if (reverse)
                 {
@@ -248,8 +263,8 @@ namespace Core.Algorythm
                             elementAngle -= Math.PI * 2;
 
                         points[elements - i] = new Point2(
-                            center.X + (float)(Math.Cos(elementAngle) * _radius),
-                            center.Y + (float)(Math.Sin(elementAngle) * _radius));
+                            _xCenter + (float)(Math.Cos(elementAngle) * _radius),
+                            _yCenter + (float)(Math.Sin(elementAngle) * _radius));
                     }
                 }
                 else
@@ -262,8 +277,8 @@ namespace Core.Algorythm
                             elementAngle -= Math.PI * 2;
 
                         points[i] = new Point2(
-                            center.X + (float)(Math.Cos(elementAngle) * _radius),
-                            center.Y + (float)(Math.Sin(elementAngle) * _radius));
+                            _xCenter + (float)(Math.Cos(elementAngle) * _radius),
+                            _yCenter + (float)(Math.Sin(elementAngle) * _radius));
                     }
                 }
                 return points;

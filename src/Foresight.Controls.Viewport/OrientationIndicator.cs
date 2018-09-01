@@ -239,7 +239,6 @@ namespace UI.Controls.Viewport
             if (disposing)
             {
                 _glFont?.Dispose();
-
                 Glu.gluDeleteQuadric(_quadric);
             }
         }
