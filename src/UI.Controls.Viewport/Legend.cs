@@ -1,21 +1,26 @@
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 using Core.Geometry;
+using Tao.OpenGl;
 
-namespace UI.Controls.Viewport.Overlay
+namespace UI.Controls.Viewport
 {
-    public class Legend : OverlayBase
+    public class Legend : IDisposable
     {
         private const int NUMBER_OF_VALUES = 10;
         private readonly Font _titleFont;
         private readonly Font _valueFont;
         private readonly ColorScale _colorScale;
         private float _minValue, _maxValue;
-        private string _title;
+        private string _title; private Bitmap _image;
+        private bool _isDirty;
 
         internal Legend()
         {
+            Visible = true;
+            _isDirty = true;
             _minValue = 0f;
             _maxValue = 100f;
             _colorScale = ColorScale.Gradient;
@@ -23,6 +28,61 @@ namespace UI.Controls.Viewport.Overlay
             _valueFont = new Font("Tahoma", 8.25f, FontStyle.Regular);
             _titleFont = new Font("MS Sans Serif", 8.25f, FontStyle.Bold);
         }
+
+        public bool Visible { get; set; }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        private void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _image?.Dispose();
+                _valueFont?.Dispose();
+                _titleFont?.Dispose();
+            }
+        }
+
+        private void SetDirty()
+        {
+            _isDirty = true;
+        }
+        
+        internal void Draw(int x, int y)
+        {
+            if (_isDirty)
+            {
+                _image = CreateImage();
+                _isDirty = false;
+            }
+
+            if (_image == null)
+                return;
+            Gl.glPushAttrib(Gl.GL_ENABLE_BIT | Gl.GL_COLOR_BUFFER_BIT);
+            {
+                Gl.glBlendFunc(Gl.GL_SRC_ALPHA, Gl.GL_ONE_MINUS_SRC_ALPHA);
+                Gl.glEnable(Gl.GL_BLEND); //blending is required to respect the source Image alpha values
+
+                Gl.glRasterPos2i(x, y);
+                var rectangle = new Rectangle(0, 0, _image.Width, _image.Height);
+
+                var data = _image.LockBits(rectangle, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+                try
+                {
+                    Gl.glDrawPixels(_image.Width, _image.Height, Gl.GL_BGRA, Gl.GL_UNSIGNED_BYTE, data.Scan0);
+                }
+                finally
+                {
+                    _image.UnlockBits(data);
+                }
+            }
+            Gl.glPopAttrib();
+        }
+        
 
         public void SetRange(string title, float max, float min)
         {
@@ -32,7 +92,7 @@ namespace UI.Controls.Viewport.Overlay
             SetDirty();
         }
 
-        protected override Bitmap CreateImage()
+        private Bitmap CreateImage()
         {
             const int titleSpacingY = 15;
             const int labelOffsetX = 22;
@@ -107,17 +167,6 @@ namespace UI.Controls.Viewport.Overlay
 
             newImage.RotateFlip(RotateFlipType.Rotate180FlipX);
             return newImage;
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            base.Dispose(disposing);
-
-            if (disposing)
-            {
-                _valueFont?.Dispose();
-                _titleFont?.Dispose();
-            }
         }
     }
 }

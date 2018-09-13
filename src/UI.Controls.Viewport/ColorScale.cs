@@ -6,13 +6,18 @@ namespace UI.Controls.Viewport
 {
     public class ColorScale
     {
+        public static readonly ColorScale Gradient = new ColorScale(
+            new KeyColor(0, Color.Blue),
+            new KeyColor(85, Color.Cyan),
+            new KeyColor(170, Color.Yellow),
+            new KeyColor(255, Color.Red));
+
         private const short SHADES = 256;
         private readonly byte[,] _color;
 
         private ColorScale(params KeyColor[] keyColors)
         {
             _color = new byte[3, SHADES];
-
             Build(keyColors);
         }
         
@@ -29,8 +34,6 @@ namespace UI.Controls.Viewport
         private void Build(IReadOnlyList<KeyColor> keys)
         {
             var keysCount = (short) keys.Count;
-
-            // if reverse then reorder the color values from back to front...
             for (var i = 0; i < keysCount - 1; i++)
             {
                 var x1 = keys[i].Position;
@@ -54,7 +57,6 @@ namespace UI.Controls.Viewport
 
                 for (int j = x1; j <= x2; j++)
                 {
-                    //_color[0, SHADES - j - 1] = (byte)(ra * (float)j + rb);
                     _color[0, j] = (byte) (ra * j + rb);
                     _color[1, j] = (byte) (ga * j + gb);
                     _color[2, j] = (byte) (ba * j + bb);
@@ -62,18 +64,6 @@ namespace UI.Controls.Viewport
             }
         }
         
-        public static ColorScale Gradient
-        {
-            get
-            {
-                return new ColorScale(
-                    new KeyColor(0, Color.Blue),
-                    new KeyColor(85, Color.Cyan),
-                    new KeyColor(170, Color.Yellow),
-                    new KeyColor(255, Color.Red));
-            }
-        }
-
         private struct KeyColor
         {
             public KeyColor(short position, Color color)

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Core.Algorithm;
 using Core.Fea;
 using UI.Controls.Viewport;
-using UI.Controls.Viewport.Overlay;
 using Label = System.Windows.Forms.Label;
 
 namespace UI.Windows
@@ -89,7 +88,7 @@ namespace UI.Windows
         {
             viewport.Labels.Clear();
             
-            viewport.Labels.Add(new FlagLabel(
+            viewport.Labels.Add(new LabelFlag(
                 fm.MaxNode.X + fm.MaxNode.FreedomX,
                 fm.MaxNode.Y + fm.MaxNode.FreedomY,
                 0,

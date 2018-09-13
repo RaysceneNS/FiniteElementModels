@@ -16,10 +16,4 @@ namespace UI.Controls.Viewport
         Zoom,
         Pan,
     }
-
-    public enum PlotMode
-    {
-        PerElement,
-        PerNode
-    }
 }

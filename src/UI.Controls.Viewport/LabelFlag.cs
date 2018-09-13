@@ -5,16 +5,16 @@ using System.Drawing.Imaging;
 using System.Drawing.Text;
 using Core.Geometry;
 
-namespace UI.Controls.Viewport.Overlay
+namespace UI.Controls.Viewport
 {
-    public class FlagLabel : LabelBase
+    public class LabelFlag : LabelBase
     {
         private readonly string _text;
         private readonly Font _textFont;
         private readonly Color _textColor;
         private readonly Color _backgroundColor;
 
-        public FlagLabel(float x, float y, float z, string text, Font textFont, Color textColor, Color backgroundColor)
+        public LabelFlag(float x, float y, float z, string text, Font textFont, Color textColor, Color backgroundColor)
             : base(new Point3(x, y, z))
         {
             _text = text;

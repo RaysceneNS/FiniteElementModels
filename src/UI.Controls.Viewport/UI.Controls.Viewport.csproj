@@ -76,11 +76,9 @@
     <Compile Include="Enums.cs" />
     <Compile Include="ColorScale.cs" />
     <Compile Include="GLContextException.cs" />
-    <Compile Include="Overlay\FlagLabel.cs" />
-    <Compile Include="Overlay\LabelBase.cs" />
-    <Compile Include="Overlay\Legend.cs" />
-    <Compile Include="Overlay\OverlayBase.cs" />
-    <Compile Include="RasterFont.cs" />
+    <Compile Include="LabelFlag.cs" />
+    <Compile Include="LabelBase.cs" />
+    <Compile Include="Legend.cs" />
     <Compile Include="Camera.cs" />
     <Compile Include="GLContext.cs" />
     <Compile Include="GLException.cs" />

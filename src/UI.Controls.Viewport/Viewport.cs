@@ -5,7 +5,6 @@ using System.Security.Permissions;
 using System.Windows.Forms;
 using Core.Geometry;
 using Tao.OpenGl;
-using UI.Controls.Viewport.Overlay;
 
 namespace UI.Controls.Viewport
 {
@@ -259,8 +258,7 @@ namespace UI.Controls.Viewport
 
                 foreach (var label in Labels)
                 {
-                    if (label.Visible)
-                        label.Draw();
+                    label.Draw();
                 }
 
                 if (Legend.Visible)
@@ -453,22 +451,6 @@ namespace UI.Controls.Viewport
         {
 //            _camera.TopView();
             Invalidate();
-        }
-
-        internal static Point2 Project(Point3 p)
-        {
-            var modelMatrix = new double[16];
-            var projMatrix = new double[16];
-            var viewport = new int[4];
-
-            Gl.glGetDoublev(Gl.GL_MODELVIEW_MATRIX, modelMatrix);
-            Gl.glGetDoublev(Gl.GL_PROJECTION_MATRIX, projMatrix);
-            Gl.glGetIntegerv(Gl.GL_VIEWPORT, viewport);
-
-            if (Glu.gluProject(p.X, p.Y, p.Z, modelMatrix, projMatrix, viewport, out var winX, out var winY, out _) == Gl.GL_FALSE)
-                throw new GLException("Call to gluProject() failed.");
-
-            return new Point2((float) winX, (float) winY);
         }
     }
 }
