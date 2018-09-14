@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Core.Fea
 {
@@ -107,13 +108,23 @@ namespace Core.Fea
 
             foreach (var element in this.Elements)
             {
-                for (var j = 0; j < element.NumberOfNodes; j++)
-                {
-                    elementStresses[element.NodeList[j], 0] += element.Stress[0];
-                    elementStresses[element.NodeList[j], 1] += element.Stress[1];
-                    elementStresses[element.NodeList[j], 2] += element.Stress[2];
-                    elementCounts[element.NodeList[j]]++;
-                }
+                int nodeIdx0 = element.NodeList[0];
+                elementStresses[nodeIdx0, 0] += element.Stress[0];
+                elementStresses[nodeIdx0, 1] += element.Stress[1];
+                elementStresses[nodeIdx0, 2] += element.Stress[2];
+                elementCounts[nodeIdx0]++;
+
+                int nodeIdx1 = element.NodeList[1];
+                elementStresses[nodeIdx1, 0] += element.Stress[0];
+                elementStresses[nodeIdx1, 1] += element.Stress[1];
+                elementStresses[nodeIdx1, 2] += element.Stress[2];
+                elementCounts[nodeIdx1]++;
+
+                int nodeIdx2 = element.NodeList[2];
+                elementStresses[nodeIdx2, 0] += element.Stress[0];
+                elementStresses[nodeIdx2, 1] += element.Stress[1];
+                elementStresses[nodeIdx2, 2] += element.Stress[2];
+                elementCounts[nodeIdx2]++;
             }
 
             foreach (var node in this.Nodes)
@@ -144,18 +155,6 @@ namespace Core.Fea
 
                 node.ColorIndex = idx;
             }
-        }
-
-        public struct ElementEdge
-        {
-            internal ElementEdge(int v1, int v2)
-            {
-                this.V1 = v1;
-                this.V2 = v2;
-            }
-
-            public int V1 { get; }
-            public int V2 { get; }
         }
     }
 }

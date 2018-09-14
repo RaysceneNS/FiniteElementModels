@@ -4,8 +4,8 @@ using System.Collections.Generic;
 namespace Core.Algorithm
 {
     /// <summary>
-    ///     Welds the geometric primitives line segment and arc into a continuous polyshape
-    ///     This class is mainly used to provide input geometry to the other methods
+    /// Welds the geometric primitives line segment and arc into a continuous polyshape
+    /// This class is mainly used to provide input geometry to the other methods
     /// </summary>
     public class LoopBuilder
     {
@@ -23,13 +23,13 @@ namespace Core.Algorithm
         /// </summary>
         /// <param name="points">The points.</param>
         /// <returns></returns>
-        private static float CalculatePsuedoArea(Point2[] points)
+        private static float CalculatePsuedoArea(List<Point2> points)
         {
             if (points == null)
                 throw new ArgumentNullException(nameof(points));
 
             var area = 0f;
-            var length = points.Length;
+            var length = points.Count;
             for (var i = 0; i < length; i++)
             {
                 var i2 = (i + 1) % length;
@@ -114,7 +114,7 @@ namespace Core.Algorithm
             if (entityType == typeof(Arc2))
             {
                 var arc = (Arc2)entity;
-                return arc.Start;
+                return arc.Start();
             }
             return new Point2();
         }
@@ -131,7 +131,7 @@ namespace Core.Algorithm
             if (entityType == typeof(Arc2))
             {
                 var arc = (Arc2)entity;
-                return arc.End;
+                return arc.End();
             }
             return new Point2();
         }
@@ -142,7 +142,7 @@ namespace Core.Algorithm
         /// <param name="clockwise">if set to <c>true</c> [clockwise].</param>
         /// <param name="maxDistance">The max distance.</param>
         /// <returns></returns>
-        public Point2[] Build(bool clockwise = true, float maxDistance = 1)
+        public IEnumerable<Point2> Build(bool clockwise = true, float maxDistance = 1)
         {
             // construct a point set from all the entities
             var points = new List<Point2>();
@@ -158,11 +158,11 @@ namespace Core.Algorithm
             points.Add(points[0]);
 
             // determine whether this shape is wound clockwise or counter-clockwise
-            var area = CalculatePsuedoArea(points.ToArray());
+            var area = CalculatePsuedoArea(points);
             if (area < 0f && clockwise || area > 0f && !clockwise)
                 points.Reverse();
 
-            return points.ToArray();
+            return points;
         }
 
         private static IEnumerable<Point2> GetPoints(LineSegment2 entity, float elementSize, bool revert)
@@ -212,24 +212,18 @@ namespace Core.Algorithm
                 _yCenter = yCenter;
             }
 
-            public Point2 End
+            public Point2 End()
             {
-                get
-                {
-                    double rads = ToRadians(_endAngle);
-                    var p = new Point2((float)Math.Cos(rads) * _radius, (float)Math.Sin(rads) * _radius);
-                    return new Point2(p.X + _xCenter, p.Y + _yCenter);
-                }
+                double rads = ToRadians(_endAngle);
+                var p = new Point2((float)Math.Cos(rads) * _radius, (float)Math.Sin(rads) * _radius);
+                return new Point2(p.X + _xCenter, p.Y + _yCenter);
             }
 
-            public Point2 Start
+            public Point2 Start()
             {
-                get
-                {
-                    double rads = ToRadians(_startAngle);
-                    var p = new Point2((float)Math.Cos(rads) * _radius, (float)Math.Sin(rads) * _radius);
-                    return new Point2(p.X + _xCenter, p.Y + _yCenter);
-                }
+                double rads = ToRadians(_startAngle);
+                var p = new Point2((float)Math.Cos(rads) * _radius, (float)Math.Sin(rads) * _radius);
+                return new Point2(p.X + _xCenter, p.Y + _yCenter);
             }
 
             /// <summary>
@@ -244,7 +238,7 @@ namespace Core.Algorithm
                 return angle;
             }
 
-            public Point2[] GetPoints(float elementSize, bool reverse)
+            public IEnumerable<Point2> GetPoints(float elementSize, bool reverse)
             {
                 var radStartAngle = ToRadians(_startAngle);
                 var radAngle = ToRadians(DeltaAngle());
@@ -291,7 +285,7 @@ namespace Core.Algorithm
         /// <returns></returns>
         private static float ToRadians(float angle)
         {
-            return angle * (float)(Math.PI / 180.0);
+            return (float)(angle * Math.PI / 180.0);
         }
 
         private struct LineSegment2

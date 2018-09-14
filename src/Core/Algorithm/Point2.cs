@@ -2,7 +2,7 @@ using System;
 
 namespace Core.Algorithm
 {
-    public struct Point2
+    public struct Point2 : IEquatable<Point2>
     {
         public Point2(float x, float y)
         {
@@ -25,9 +25,14 @@ namespace Core.Algorithm
 
         public override bool Equals(object obj)
         {
-            if (!(obj is Point2))
-                return false;
-            return (Point2) obj == this;
+            if (!(obj is Point2)) return false;
+            Point2 other = (Point2)obj;
+            return X == other.X && Y == other.Y;
+        }
+
+        public bool Equals(Point2 other)
+        {
+            return X == other.X && Y == other.Y;
         }
         public override int GetHashCode()
         {

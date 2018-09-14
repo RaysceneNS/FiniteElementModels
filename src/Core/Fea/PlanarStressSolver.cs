@@ -94,7 +94,6 @@ namespace Core.Fea
                 }
             }
 
-
             // solve for forces
             var forces = new float[this._numElements];
             this.SolveEquations(forces, loads, stiffnessMatrix, stiffnessIndexes);
@@ -185,19 +184,22 @@ namespace Core.Fea
         private void CalculateElementStiffness(int index, ref float[] stiffness)
         {
             var num = index / DEGREES_OF_FREEDOM;
-
+            const int NODE_COUNT = 3;
             for (var i = 0; i < this._mesh.ElementCount; i++ )
             {
                 var element = this._mesh.Element(i);
 
                 var flag = false;
-                var connections = new int[element.NumberOfNodes];
-                for(var j = 0; j < element.NumberOfNodes; j++)
-                {
-                    connections[j] = element.Connection[j];
-                    if (connections[j] == num)
-                        flag = true;
-                }
+                var connections = new int[NODE_COUNT];
+                connections[0] = element.Connection[0];
+                if (connections[0] == num)
+                    flag = true;
+                connections[1] = element.Connection[1];
+                if (connections[1] == num)
+                    flag = true;
+                connections[2] = element.Connection[2];
+                if (connections[2] == num)
+                    flag = true;
 
                 if (flag)
                 {
@@ -211,11 +213,12 @@ namespace Core.Fea
                     var y2 = node2.Y;
                     var x3 = node3.X;
                     var y3 = node3.Y;
-                    
-                    element.CalcElemK(this._thickness, this._youngsModulus, this._poissonsRatio, x1, y1, x2, y2, x3, y3);
-                    for (var j = 0; j < element.NumberOfNodes; j++)
+
+                    element.CalcElemK(this._thickness, this._youngsModulus, this._poissonsRatio, x1, y1, x2, y2, x3,
+                        y3);
+                    for (var j = 0; j < NODE_COUNT; j++)
                     {
-                        for (var k = 0; k < element.NumberOfNodes; k++)
+                        for (var k = 0; k < NODE_COUNT; k++)
                         {
                             for (var l = 0; l < DEGREES_OF_FREEDOM; l++)
                             {
@@ -225,7 +228,8 @@ namespace Core.Fea
                                     var b = connections[k] * DEGREES_OF_FREEDOM + m;
 
                                     if (a == index)
-                                        stiffness[b] += element.Stiffness[j * DEGREES_OF_FREEDOM + l, k * DEGREES_OF_FREEDOM + m];
+                                        stiffness[b] += element.Stiffness[j * DEGREES_OF_FREEDOM + l,
+                                            k * DEGREES_OF_FREEDOM + m];
                                 }
                             }
                         }
@@ -262,8 +266,7 @@ namespace Core.Fea
                     }
                 }
             }
-            
-            if (isDisplaced[ind])
+            else 
             {
                 loads = stiffness[ind] * displacements[ind];
 

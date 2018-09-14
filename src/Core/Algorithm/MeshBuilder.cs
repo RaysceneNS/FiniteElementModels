@@ -433,13 +433,6 @@ namespace Core.Algorithm
                     lastPercent = percentProgress;
                     progressReport.Report(new TaskProgress { ProgressPercentage = percentProgress, Text = ("Meshing / Iteration " + iteration + " " + percentProgress + "%...") });
                 }
-
-                //cancel if required...
-                //if (backgroundWorker.CancellationPending)
-                //{
-                //    eventArgs.Cancel = true;
-                //    return false;
-                //}
             }
 
             progressReport.Report(new TaskProgress { ProgressPercentage = 100, Text = ("Meshing / Iteration " + iteration + " 100%...") });
@@ -497,23 +490,20 @@ namespace Core.Algorithm
 
                 // determine if any improvements can be made
                 numImprovements = 0;
-                if (lines.Count > 0)
+                foreach (var meshLine in lines)
                 {
-                    foreach (var meshLine in lines)
-                    {
-                        // see if this line can be broken down into smaller elements
-                        var points = meshLine.CreatePointsAlongLine(ElementSize, _vertices);
+                    // see if this line can be broken down into smaller elements
+                    var points = CreatePointsAlongLine(meshLine, ElementSize, _vertices);
 
-                        //test every hypothetical point generated along the line to see if it is a viable improvement 
-                        foreach (var t in points)
+                    //test every hypothetical point generated along the line to see if it is a viable improvement 
+                    foreach (var t in points)
+                    {
+                        var length = TestImprovement(ElementSize, t, _vertices[meshLine.V1],
+                            _vertices[meshLine.V2]);
+                        if (length > ElementSize * improveFactor)
                         {
-                            var length = TestImprovement(ElementSize, t, _vertices[meshLine.V1],
-                                _vertices[meshLine.V2]);
-                            if (length > ElementSize * improveFactor)
-                            {
-                                _improvement.Add(t);
-                                numImprovements++;
-                            }
+                            _improvement.Add(t);
+                            numImprovements++;
                         }
                     }
                 }
@@ -632,6 +622,21 @@ namespace Core.Algorithm
             return BuildModel();
         }
 
+        private static Point2[] CreatePointsAlongLine(MeshLine line, double unitLength, IReadOnlyList<Point2> points)
+        {
+            var p1 = points[line.V1];
+            var p2 = points[line.V2];
+
+            var num = (int)Math.Ceiling(Math.Sqrt(line.SqrLength) / unitLength);
+
+            var p = new Point2[num - 1];
+            for (var i = 1; i < num; i++)
+            {
+                p[i - 1] = new Point2(p1.X + i * (p2.X - p1.X) / num, p1.Y + i * (p2.Y - p1.Y) / num);
+            }
+            return p;
+        }
+
         /// <summary>
         ///     Calculate the signed area of the triangle
         /// </summary>
@@ -650,22 +655,22 @@ namespace Core.Algorithm
 
         private Model BuildModel()
         {
-            var mesh = new Model(_vertices.Count, _faces.Count);
+            var model = new Model(_vertices.Count, _faces.Count);
             foreach (var tf in this._vertices)
             {
-                mesh.AddNode(new Node(tf.X, tf.Y));
+                model.AddNode(new Node(tf.X, tf.Y));
             }
             if (this._faces.First == null)
-                return mesh;
+                return model;
 
             var firstFace = _faces.First;
             while (firstFace != null)
             {
                 var triangleFace = firstFace.Value;
-                mesh.AddElement(new Element(triangleFace.v1, triangleFace.v3, triangleFace.v2));
+                model.AddElement(new Element(triangleFace.v1, triangleFace.v3, triangleFace.v2));
                 firstFace = firstFace.Next;
             }
-            return mesh;
+            return model;
         }
 
         private void CalculateQuality()
@@ -757,7 +762,7 @@ namespace Core.Algorithm
             return Math.Sqrt(minDistance);
         }
 
-        private class MeshLine
+        private struct MeshLine
         {
             private readonly float _sqrLength;
 
@@ -795,37 +800,10 @@ namespace Core.Algorithm
                 return V1 ^ V2;
             }
 
-            public Point2[] CreatePointsAlongLine(double unitLength, IReadOnlyList<Point2> points)
-            {
-                var p1 = points[V1];
-                var p2 = points[V2];
-
-                var num = (int)Math.Ceiling(Math.Sqrt(_sqrLength) / unitLength);
-
-                var p = new Point2[num - 1];
-                for (var i = 1; i < num; i++)
-                {
-                    p[i - 1] = new Point2(p1.X + i * (p2.X - p1.X) / num, p1.Y + i * (p2.Y - p1.Y) / num);
-                }
-                return p;
-            }
-
             public override string ToString()
             {
-                return string.Concat("v1:", V1, " v2:", V2, " len:", _sqrLength);
+                return $"v1:{V1} v2:{V2} len:{_sqrLength}";
             }
         }
-    }
-
-    public class TaskProgress
-    {
-        public int ProgressPercentage { get; set; }
-        public string Text { get; set; }
-    }
-
-    public enum SmoothingMode
-    {
-        Points,
-        Area
     }
 }

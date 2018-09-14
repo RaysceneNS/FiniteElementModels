@@ -65,7 +65,11 @@
   <ItemGroup>
     <Compile Include="Algorithm\MeshBuilder.cs" />
     <Compile Include="Algorithm\LoopBuilder.cs" />
+    <Compile Include="Algorithm\SmoothingMode.cs" />
+    <Compile Include="Algorithm\TaskProgress.cs" />
     <Compile Include="Fea\Element.cs" />
+    <Compile Include="Fea\ElementEdge.cs" />
+    <Compile Include="Fea\Matrix.cs" />
     <Compile Include="Fea\Model.cs" />
     <Compile Include="Fea\Node.cs" />
     <Compile Include="Fea\PlanarStressSolver.cs" />
