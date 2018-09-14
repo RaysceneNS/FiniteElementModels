@@ -25,5 +25,10 @@ namespace Core.Fea
         {
             return V1 == other.V1 && V2 == other.V2;
         }
+
+        public override int GetHashCode()
+        {
+            return V1.GetHashCode() ^ V2.GetHashCode();
+        }
     }
 }

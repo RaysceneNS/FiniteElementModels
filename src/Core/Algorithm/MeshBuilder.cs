@@ -327,7 +327,7 @@ namespace Core.Algorithm
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        private struct TriangleEdge
+        private struct TriangleEdge : IEquatable<TriangleEdge>
         {
             internal readonly int v1;
             internal readonly int v2;
@@ -336,6 +336,22 @@ namespace Core.Algorithm
             {
                 this.v1 = v1;
                 this.v2 = v2;
+            }
+            public override bool Equals(object obj)
+            {
+                if (!(obj is TriangleEdge))
+                    return false;
+                TriangleEdge other = (TriangleEdge)obj;
+                return v1 == other.v1 && v2 == other.v2;
+            }
+
+            public bool Equals(TriangleEdge other)
+            {
+                return v1 == other.v1 && v2 == other.v2;
+            }
+            public override int GetHashCode()
+            {
+                return v1.GetHashCode() ^ v2.GetHashCode();
             }
         }
 
