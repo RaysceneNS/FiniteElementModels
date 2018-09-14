@@ -8,7 +8,9 @@ namespace Core.Fea
 
         public Element(int node1, int node2, int node3)
         {
-            this.Connection = new [] { node1, node2, node3 };
+            this.Node1 = node1;
+            this.Node2 = node2;
+            this.Node3 = node3;
         }
 
         internal void CalcElemK(float thickness, float young, float poisson, float x1, float y1, float x2, float y2, float x3, float y3)
@@ -69,20 +71,14 @@ namespace Core.Fea
             var vectors = txy * txy + txz * txz + tyz * tyz;
             return (float)(1.0 / Math.Sqrt(2.0) * Math.Sqrt(stresses + 6.0 * vectors));
         }
-
-        public int[] NodeList
-        {
-            get
-            {
-                return this.Connection;
-            }
-        }
-
+        
         private float[,] Material { get; set; }
         
         public float[] Stress { get; private set; }
-        
-        internal int[] Connection { get; }
+
+        public int Node1 { get; }
+        public int Node2 { get; }
+        public int Node3 { get; }
 
         internal float[,] Stiffness { get; private set; }
     }

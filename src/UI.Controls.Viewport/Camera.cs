@@ -88,14 +88,14 @@ namespace UI.Controls.Viewport
 
         internal void Pan(float dx, float dy)
         {
-            var currentZoomFactor = CurrentZoomFactor;
+            var currentZoomFactor = CurrentZoomFactor();
             _panPositionX += dx * currentZoomFactor;
             _panPositionY += dy * currentZoomFactor;
         }
 
         internal void Zoom(float amount)
         {
-            var height = Clamp(0.0001f, _zoomHeight + amount * CurrentZoomFactor, 10000f);
+            var height = Clamp(0.0001f, _zoomHeight + amount * CurrentZoomFactor(), 10000f);
             var width = height * (ViewportWidth / (float) ViewportHeight);
             _zoomWidth = width;
             _zoomHeight = height;
@@ -106,7 +106,7 @@ namespace UI.Controls.Viewport
             if (rectWidth <=  0 || rectHeight <= 0)
                 return;
 
-            var currentZoomFactor = CurrentZoomFactor;
+            var currentZoomFactor = CurrentZoomFactor();
             float height, width;
             if (ViewportWidth / rectWidth < ViewportHeight / rectHeight)
             {
@@ -147,9 +147,9 @@ namespace UI.Controls.Viewport
             Gl.glTranslatef(-_modelX, -_modelY, -_modelZ);
         }
 
-        private float CurrentZoomFactor
+        private float CurrentZoomFactor()
         {
-            get { return _zoomHeight / ViewportHeight; }
+            return _zoomHeight / ViewportHeight;
         }
 
         private static float Clamp(float low, float val, float high)

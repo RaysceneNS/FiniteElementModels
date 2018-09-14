@@ -11,12 +11,16 @@ namespace Core.Fea
             if (b == null)
                 throw new ArgumentNullException(nameof(b));
 
-            var m = new float[a.GetLength(0), b.GetLength(1)];
-            for (var i = 0; i < a.GetLength(0); i++)
+            var alen0 = a.GetLength(0);
+            var alen1 = a.GetLength(1);
+            var blen1 = b.GetLength(1);
+
+            var m = new float[alen0, blen1];
+            for (var i = 0; i < alen0; i++)
             {
-                for (var j = 0; j < b.GetLength(1); j++)
+                for (var k = 0; k < alen1; k++)
                 {
-                    for (var k = 0; k < a.GetLength(1); k++)
+                    for (var j = 0; j < blen1; j++)
                     {
                         m[i, j] += a[i, k] * b[k, j];
                     }
@@ -51,9 +55,11 @@ namespace Core.Fea
                 throw new ArgumentNullException(nameof(b));
 
             var m = new float[b.Length];
-            for (var i = 0; i < a.GetLength(0); i++)
+            var dim1 = a.GetLength(0);
+            var dim2 = a.GetLength(1);
+            for (var i = 0; i < dim1; i++)
             {
-                for (var j = 0; j < a.GetLength(1); j++)
+                for (var j = 0; j < dim2; j++)
                 {
                     m[i] += a[i, j] * b[j];
                 }
@@ -66,10 +72,13 @@ namespace Core.Fea
             if (matrix == null)
                 throw new ArgumentNullException(nameof(matrix));
 
-            var m = new float[matrix.GetLength(1), matrix.GetLength(0)];
-            for (var i = 0; i < matrix.GetLength(0); i++)
+            var dim1 = matrix.GetLength(0);
+            var dim2 = matrix.GetLength(1);
+
+            var m = new float[dim2, dim1];
+            for (var i = 0; i < dim1; i++)
             {
-                for (var j = 0; j < matrix.GetLength(1); j++)
+                for (var j = 0; j < dim2; j++)
                 {
                     m[j, i] = matrix[i, j];
                 }

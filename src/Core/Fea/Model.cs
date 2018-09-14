@@ -30,9 +30,9 @@ namespace Core.Fea
         {
             foreach (var element in this.Elements)
             {
-                var cn1 = element.NodeList[0];
-                var cn2 = element.NodeList[1];
-                var cn3 = element.NodeList[2];
+                var cn1 = element.Node1;
+                var cn2 = element.Node2;
+                var cn3 = element.Node3;
 
                 var edgeNode = this.Edges.Find(new ElementEdge(cn2, cn1));
                 if (edgeNode != null)
@@ -63,19 +63,19 @@ namespace Core.Fea
 
             foreach (var element in this.Elements)
             {
-                int nodeIdx0 = element.NodeList[0];
+                int nodeIdx0 = element.Node1;
                 elementStresses[nodeIdx0, 0] += element.Stress[0];
                 elementStresses[nodeIdx0, 1] += element.Stress[1];
                 elementStresses[nodeIdx0, 2] += element.Stress[2];
                 elementCounts[nodeIdx0]++;
 
-                int nodeIdx1 = element.NodeList[1];
+                int nodeIdx1 = element.Node2;
                 elementStresses[nodeIdx1, 0] += element.Stress[0];
                 elementStresses[nodeIdx1, 1] += element.Stress[1];
                 elementStresses[nodeIdx1, 2] += element.Stress[2];
                 elementCounts[nodeIdx1]++;
 
-                int nodeIdx2 = element.NodeList[2];
+                int nodeIdx2 = element.Node3;
                 elementStresses[nodeIdx2, 0] += element.Stress[0];
                 elementStresses[nodeIdx2, 1] += element.Stress[1];
                 elementStresses[nodeIdx2, 2] += element.Stress[2];
@@ -85,7 +85,10 @@ namespace Core.Fea
             foreach (var node in this.Nodes)
             {
                 var attachCount = elementCounts[node.Index];
-                node.SetStress(elementStresses[node.Index, 0] / attachCount, elementStresses[node.Index, 1] / attachCount, elementStresses[node.Index, 2] / attachCount);
+                node.SetStress(
+                    elementStresses[node.Index, 0] / attachCount, 
+                    elementStresses[node.Index, 1] / attachCount, 
+                    elementStresses[node.Index, 2] / attachCount);
 
                 if (node.VonMises < min)
                 {

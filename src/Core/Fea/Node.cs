@@ -26,7 +26,9 @@ namespace Core.Fea
 
         internal void SetStress(float sx, float sy, float sz)
         {
-            this.Stress = new [] { sx, sy, sz };
+            this.StressX = sx;
+            this.StressY = sy;
+            this.StressZ = sz;
             this.VonMises = Element.VonMises3D(sx, sy, 0f, sz, 0f, 0f);
         }
 
@@ -60,8 +62,10 @@ namespace Core.Fea
         public float LoadY { get; private set; }
         public bool Loaded { get; private set; }
 
-        public float[] Stress { get; private set; }
-        
+        public float StressX { get; private set; }
+        public float StressY { get; private set; }
+        public float StressZ { get; private set; }
+
         public float FreedomX { get; private set; }
         public float FreedomY { get; private set; }
 

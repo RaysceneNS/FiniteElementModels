@@ -110,11 +110,14 @@ namespace Core.Fea
                 var element = this._model.Elements[i];
                 var localUnknowns = new float[DEGREES_OF_FREEDOM * 3];
 
-                for (var j = 0; j < 3; j ++ )
-                {
-                    localUnknowns[j * DEGREES_OF_FREEDOM + 0] = forces[element.Connection[j] * DEGREES_OF_FREEDOM + 0];
-                    localUnknowns[j * DEGREES_OF_FREEDOM + 1] = forces[element.Connection[j] * DEGREES_OF_FREEDOM + 1];
-                }
+                localUnknowns[0 * DEGREES_OF_FREEDOM + 0] = forces[element.Node1 * DEGREES_OF_FREEDOM + 0];
+                localUnknowns[0 * DEGREES_OF_FREEDOM + 1] = forces[element.Node1 * DEGREES_OF_FREEDOM + 1];
+
+                localUnknowns[1 * DEGREES_OF_FREEDOM + 0] = forces[element.Node2 * DEGREES_OF_FREEDOM + 0];
+                localUnknowns[1 * DEGREES_OF_FREEDOM + 1] = forces[element.Node2 * DEGREES_OF_FREEDOM + 1];
+
+                localUnknowns[2 * DEGREES_OF_FREEDOM + 0] = forces[element.Node3 * DEGREES_OF_FREEDOM + 0];
+                localUnknowns[2 * DEGREES_OF_FREEDOM + 1] = forces[element.Node3 * DEGREES_OF_FREEDOM + 1];
                 element.CalculateStress(localUnknowns);
 
                 var progressPercent = (int)(100f * i / this._model.Elements.Count);
@@ -178,28 +181,26 @@ namespace Core.Fea
         {
             var num = index / DEGREES_OF_FREEDOM;
             const int NODE_COUNT = 3;
-            for (var i = 0; i < this._model.Elements.Count; i++ )
+            foreach (var element in this._model.Elements)
             {
-                var element = this._model.Elements[i];
-
                 var flag = false;
                 var connections = new int[NODE_COUNT];
-                connections[0] = element.Connection[0];
+                connections[0] = element.Node1;
                 if (connections[0] == num)
                     flag = true;
-                connections[1] = element.Connection[1];
+                connections[1] = element.Node2;
                 if (connections[1] == num)
                     flag = true;
-                connections[2] = element.Connection[2];
+                connections[2] = element.Node3;
                 if (connections[2] == num)
                     flag = true;
 
                 if (flag)
                 {
                     // get the nodes at the corners of the element
-                    var node1 = _model.Nodes[element.Connection[0]];
-                    var node2 = _model.Nodes[element.Connection[1]];
-                    var node3 = _model.Nodes[element.Connection[2]];
+                    var node1 = _model.Nodes[element.Node1];
+                    var node2 = _model.Nodes[element.Node2];
+                    var node3 = _model.Nodes[element.Node3];
                     var x1 = node1.X;
                     var y1 = node1.Y;
                     var x2 = node2.X;
@@ -207,8 +208,7 @@ namespace Core.Fea
                     var x3 = node3.X;
                     var y3 = node3.Y;
 
-                    element.CalcElemK(this._thickness, this._youngsModulus, this._poissonsRatio, x1, y1, x2, y2, x3,
-                        y3);
+                    element.CalcElemK(this._thickness, this._youngsModulus, this._poissonsRatio, x1, y1, x2, y2, x3, y3);
                     for (var j = 0; j < NODE_COUNT; j++)
                     {
                         for (var k = 0; k < NODE_COUNT; k++)
@@ -217,12 +217,10 @@ namespace Core.Fea
                             {
                                 for (var m = 0; m < DEGREES_OF_FREEDOM; m++)
                                 {
-                                    var a = connections[j] * DEGREES_OF_FREEDOM + l;
                                     var b = connections[k] * DEGREES_OF_FREEDOM + m;
 
-                                    if (a == index)
-                                        stiffness[b] += element.Stiffness[j * DEGREES_OF_FREEDOM + l,
-                                            k * DEGREES_OF_FREEDOM + m];
+                                    if (connections[j] * DEGREES_OF_FREEDOM + l == index)
+                                        stiffness[b] += element.Stiffness[j * DEGREES_OF_FREEDOM + l, k * DEGREES_OF_FREEDOM + m];
                                 }
                             }
                         }

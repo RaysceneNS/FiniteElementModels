@@ -7,7 +7,7 @@ namespace UI.Controls.Viewport
     public class FeaScene : SceneObject, IDisposable
     {
         private readonly Model _model;
-        private int _edgeDisplayList, _elementList, _meshList;
+        private int _edgeDisplayList, _elementList, _meshList, _meshModifiedList;
         private bool _displayListsCreated;
         private int _loadSymbolList, _constraintSymbolList;
 
@@ -91,7 +91,7 @@ namespace UI.Controls.Viewport
             vminX = (float) minX;
             vminY = (float) minY;
         }
-        
+
         internal override void Draw()
         {
             Gl.glPolygonMode(Gl.GL_FRONT_AND_BACK, Gl.GL_FILL);
@@ -112,12 +112,22 @@ namespace UI.Controls.Viewport
                 Gl.glEnable(Gl.GL_BLEND);
                 Gl.glBlendFunc(Gl.GL_SRC_ALPHA, Gl.GL_ONE_MINUS_SRC_ALPHA);
                 Gl.glPolygonMode(Gl.GL_FRONT_AND_BACK, Gl.GL_FILL);
-                Gl.glMaterialfv(Gl.GL_FRONT_AND_BACK, Gl.GL_SPECULAR, new [] { 0.5f, 0.5f, 0.5f, 1.0f });
+                Gl.glMaterialfv(Gl.GL_FRONT_AND_BACK, Gl.GL_SPECULAR, new[] {0.5f, 0.5f, 0.5f, 1.0f});
                 Gl.glMateriali(Gl.GL_FRONT_AND_BACK, Gl.GL_SHININESS, 32);
                 this.DrawConstraints(this._constraintSymbolList);
                 this.DrawLoads(this._loadSymbolList);
                 Gl.glDisable(Gl.GL_BLEND);
                 Gl.glDisable(Gl.GL_LIGHTING);
+
+
+                Gl.glEnable(Gl.GL_POLYGON_OFFSET_LINE);
+                Gl.glPolygonOffset(-1, -1);
+                Gl.glPolygonMode(Gl.GL_FRONT_AND_BACK, Gl.GL_LINE);
+                Gl.glLineWidth(1f);
+                Gl.glDisable(Gl.GL_LIGHTING);
+                Gl.glColor3ub(0, 0, 0);
+                Gl.glCallList(this._meshModifiedList);
+                Gl.glDisable(Gl.GL_POLYGON_OFFSET_LINE);
             }
             else
             {
@@ -171,7 +181,7 @@ namespace UI.Controls.Viewport
                 var angleFromXy = (float) (Math.Atan2(0, Math.Sqrt(node.LoadX * node.LoadX + node.LoadY * node.LoadY)) * 180.0 / Math.PI);
 
                 Gl.glPushMatrix();
-                Gl.glTranslatef(node.X, node.Y, 0f);
+                Gl.glTranslatef(node.X + node.FreedomX, node.Y + node.FreedomY, 0f);
                 Gl.glRotatef(angleOnXy, 0f, 0f, 1f);
                 Gl.glRotatef(angleFromXy + 90f, 0f, -1f, 0f);
                 Gl.glCallList(loadSymbolSize);
@@ -199,6 +209,10 @@ namespace UI.Controls.Viewport
                 Gl.glDeleteLists(this._meshList, 1);
             this._meshList = 0;
 
+            if (_meshModifiedList != 0)
+                Gl.glDeleteLists(_meshModifiedList, 1);
+            _meshModifiedList = 0;
+
             if (this._elementList != 0)
                 Gl.glDeleteLists(this._elementList, 1);
             this._elementList = 0;
@@ -216,7 +230,8 @@ namespace UI.Controls.Viewport
 
                 UpdateElementList();
                 UpdateEdgeDisplayList();
-                
+                UpdateModifiedMeshList();
+
                 this._displayListsCreated = true;
             }
 
@@ -239,9 +254,9 @@ namespace UI.Controls.Viewport
 
             foreach (var element in _model.Elements)
             {
-                var node1 = this._model.Nodes[element.NodeList[0]];
-                var node2 = this._model.Nodes[element.NodeList[1]];
-                var node3 = this._model.Nodes[element.NodeList[2]];
+                var node1 = this._model.Nodes[element.Node1];
+                var node2 = this._model.Nodes[element.Node2];
+                var node3 = this._model.Nodes[element.Node3];
 
                 var c = ramp[node1.ColorIndex];
                 Gl.glColor3ub(c.R, c.G, c.B);
@@ -302,14 +317,39 @@ namespace UI.Controls.Viewport
             Gl.glNormal3f(0f, 0f, 1f);
             foreach (var e in _model.Elements)
             {
-                var node = this._model.Nodes[e.NodeList[0]];
+                var node = this._model.Nodes[e.Node1];
                 Gl.glVertex2d(node.X, node.Y);
 
-                node = this._model.Nodes[e.NodeList[1]];
+                node = this._model.Nodes[e.Node2];
                 Gl.glVertex2d(node.X, node.Y);
 
-                node = this._model.Nodes[e.NodeList[2]];
+                node = this._model.Nodes[e.Node3];
                 Gl.glVertex2d(node.X, node.Y);
+            }
+            Gl.glEnd();
+            Gl.glEndList();
+        }
+
+        private void UpdateModifiedMeshList()
+        {
+            //draw the mesh elements
+            if (_meshModifiedList == 0)
+                _meshModifiedList = Gl.glGenLists(1);
+
+            Gl.glNewList(_meshModifiedList, Gl.GL_COMPILE);
+            Gl.glBegin(Gl.GL_TRIANGLES);
+            Gl.glColor3f(0f, 0f, 0f);
+            Gl.glNormal3f(0f, 0f, 1f);
+            foreach (var e in _model.Elements)
+            {
+                var node = this._model.Nodes[e.Node1];
+                Gl.glVertex2d(node.X + node.FreedomX, node.Y + node.FreedomY);
+
+                node = this._model.Nodes[e.Node2];
+                Gl.glVertex2d(node.X + node.FreedomX, node.Y + node.FreedomY);
+
+                node = this._model.Nodes[e.Node3];
+                Gl.glVertex2d(node.X + node.FreedomX, node.Y + node.FreedomY);
             }
             Gl.glEnd();
             Gl.glEndList();
