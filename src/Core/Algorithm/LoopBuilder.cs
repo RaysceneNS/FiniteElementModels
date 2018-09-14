@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Core.Geometry;
 
 namespace Core.Algorithm
 {
@@ -292,7 +291,7 @@ namespace Core.Algorithm
         /// <returns></returns>
         private static float ToRadians(float angle)
         {
-            return angle * (float)Math.PI / 180.0f;
+            return angle * (float)(Math.PI / 180.0);
         }
 
         private struct LineSegment2
@@ -308,7 +307,12 @@ namespace Core.Algorithm
 
             public float Length
             {
-                get { return Point2.Distance(Vertex1, Vertex2); }
+                get
+                {
+                    var dx = Vertex1.X - Vertex2.X;
+                    var dy = Vertex1.Y - Vertex2.Y;
+                    return (float)Math.Sqrt(dx * dx + dy * dy);
+                }
             }
         }
     }

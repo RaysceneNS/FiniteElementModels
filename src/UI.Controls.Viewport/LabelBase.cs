@@ -1,21 +1,22 @@
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
-using Core.Geometry;
 using Tao.OpenGl;
 
 namespace UI.Controls.Viewport
 {
     public abstract class LabelBase : IDisposable
     {
-        private readonly Point3 _attachingPoint;
-        private Point2 _position;
+        private readonly float _attachingPointX, _attachingPointY, _attachingPointZ;
+        private int _positionX, _positionY;
         private Bitmap _image;
         private bool _isDirty;
         
-        internal LabelBase(Point3 attachingPoint)
+        internal LabelBase(float attachingPointX, float attachingPointY, float attachingPointZ)
         {
-            _attachingPoint = attachingPoint;
+            _attachingPointX = attachingPointX;
+            _attachingPointY = attachingPointY;
+            _attachingPointZ = attachingPointZ;
             _isDirty = true;
         }
 
@@ -43,10 +44,11 @@ namespace UI.Controls.Viewport
             Gl.glGetDoublev(Gl.GL_PROJECTION_MATRIX, projMatrix);
             Gl.glGetIntegerv(Gl.GL_VIEWPORT, viewport);
 
-            if (Glu.gluProject(_attachingPoint.X, _attachingPoint.Y, _attachingPoint.Z, modelMatrix, projMatrix, viewport, out var winX, out var winY, out _) == Gl.GL_FALSE)
+            if (Glu.gluProject(_attachingPointX, _attachingPointY, _attachingPointZ, modelMatrix, projMatrix, viewport, out var winX, out var winY, out _) == Gl.GL_FALSE)
                 throw new GLException("Call to gluProject() failed.");
 
-            _position = new Point2((float) winX, (float) winY);
+            _positionX = (int) winX;
+            _positionY = (int) winY;
         }
 
         internal void Draw()
@@ -65,7 +67,7 @@ namespace UI.Controls.Viewport
                 Gl.glBlendFunc(Gl.GL_SRC_ALPHA, Gl.GL_ONE_MINUS_SRC_ALPHA);
                 Gl.glEnable(Gl.GL_BLEND); //blending is required to respect the source Image alpha values
 
-                Gl.glRasterPos2i((int) _position.X, (int) _position.Y);
+                Gl.glRasterPos2i(_positionX, _positionY);
                 var rectangle = new Rectangle(0, 0, _image.Width, _image.Height);
 
                 var data = _image.LockBits(rectangle, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);

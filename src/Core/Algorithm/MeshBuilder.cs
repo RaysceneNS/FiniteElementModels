@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Core.Fea;
-using Core.Geometry;
 
 namespace Core.Algorithm
 {

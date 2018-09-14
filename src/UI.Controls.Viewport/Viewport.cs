@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Security.Permissions;
 using System.Windows.Forms;
-using Core.Geometry;
 using Tao.OpenGl;
 
 namespace UI.Controls.Viewport
@@ -13,29 +12,19 @@ namespace UI.Controls.Viewport
         private readonly Camera _camera;
         private readonly Light _modelLight;
         private readonly GLContext _renderingContext;
-        private ActionType _action;
-        private DrawingModes _drawingMode;
-        private Point2 _startPoint, _endPoint;
-
-        public event EventHandler<EventArgs> ActionChanged;
-
+        private float _startPointX, _startPointY;
+        
         public Viewport()
         {
-            InitializeComponent();
-            
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.Opaque | ControlStyles.ResizeRedraw | ControlStyles.UserPaint, true);
             SetStyle(ControlStyles.DoubleBuffer, false);
 
             _renderingContext = new GLContext(Handle);
-            _modelLight = new Light(Gl.GL_LIGHT0, 0.65f, 0.75f, 0.1f, new Point3(-50F, -150F, 100F));
+            _modelLight = new Light(Gl.GL_LIGHT0, 0.65f, 0.75f, 0.1f, -50F, -150F, 100F);
             Labels = new List<LabelBase>();
-            _drawingMode = DrawingModes.Shaded;
             _camera = new Camera();
-            Legend = new Legend {Visible = false};
-            
-            SceneObjects = new SceneObjectCollection();
-            SceneObjects.ListChanged += OnSceneListChanged;
-
+            Legend = new Legend();
+            SceneObjects = new List<SceneObject>();
             SetupGL();
         }
 
@@ -60,13 +49,6 @@ namespace UI.Controls.Viewport
             }
         }
 
-        private void InitializeComponent()
-        {
-            SuspendLayout();
-            Name = "Viewport";
-            ResumeLayout(true);
-        }
-
         private static void SetupGL()
         {
             Gl.glLightModeli(Gl.GL_LIGHT_MODEL_COLOR_CONTROL, Gl.GL_SEPARATE_SPECULAR_COLOR);
@@ -88,7 +70,6 @@ namespace UI.Controls.Viewport
             if (disposing)
             {
                 _renderingContext?.Dispose();
-                SceneObjects?.Clear();
                 Legend?.Dispose();
             }
             base.Dispose(disposing);
@@ -111,7 +92,11 @@ namespace UI.Controls.Viewport
                 _renderingContext.MakeCurrent();
 
                 //paint the scene using the current context
-                DrawAll();
+                Gl.glClearColor(BackColor.R / 255f, BackColor.G / 255f, BackColor.B / 255f, BackColor.A / 255f);
+                Gl.glClear(Gl.GL_COLOR_BUFFER_BIT | Gl.GL_DEPTH_BUFFER_BIT);
+                Draw3D();
+                Draw2D();
+                Gl.glFlush();
 
                 // our rendering is double buffered so swap those buffers now
                 _renderingContext.SwapBuffers();
@@ -162,79 +147,32 @@ namespace UI.Controls.Viewport
             Invalidate();
         }
 
-        private void OnSceneListChanged(object sender, EventArgs e)
+        public void LookAt(SceneObject sceneObject)
         {
-            //Rescale Model
-            if (SceneObjects.Count != 0)
+            foreach (var entity in SceneObjects)
             {
-                // compute the global bounds 
-                var boundingBox = AxisAlignedBox3.Empty;
-                foreach (var entity in SceneObjects)
+                if (sceneObject == entity)
                 {
-                    var rect = entity.AxisAlignedBoundingBox();
-                    if (boundingBox == AxisAlignedBox3.Empty)
-                        boundingBox = rect;
-                    else if (rect != AxisAlignedBox3.Empty)
-                        boundingBox = AxisAlignedBox3.Union(boundingBox, rect);
+                    entity.ModelExtents(out var minX, out var maxX, out var minY, out var maxY);
+                    var length = Math.Sqrt(Math.Pow((maxX - minX) / 2f, 2) + Math.Pow((maxY - minY) / 2f, 2));
+                    _camera.LookAtModel((maxX + minX) / 2f, (maxY + minY) / 2f, 0, (float) length);
+                    return;
                 }
-
-                if (boundingBox != AxisAlignedBox3.Empty)
-                    _camera.LookAtModel(boundingBox.Center, boundingBox.Extent);
             }
-            else
-            {
-                //default to looking at the origin if nothing else is around
-                _camera.LookAtModel(Point3.Origin, 100f);
-            }
+            //default to looking at the origin if nothing else is around
+            _camera.LookAtModel(0, 0, 0, 100f);
         }
-
 
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public Legend Legend { get; }
-
-        [Browsable(false)]
-        public ActionType Action
-        {
-            get { return _action; }
-            set
-            {
-                // apply the action type.
-                if (_action != value)
-                {
-                    _action = value;
-                    ActionChanged?.Invoke(this, new EventArgs());
-                }
-            }
-        }
-
+        
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public SceneObjectCollection SceneObjects { get; }
+        public ICollection<SceneObject> SceneObjects { get; }
 
         [Browsable(false)]
-        public List<LabelBase> Labels { get; }
-
-        [Description("Drawing mode.")]
-        [Category("Appearance")]
-        public DrawingModes DrawingMode
-        {
-            get { return _drawingMode; }
-            set
-            {
-                _drawingMode = value;
-                Invalidate();
-            }
-        }
-        
-        private void DrawAll()
-        {
-            Gl.glClearColor(BackColor.R / 255f, BackColor.G / 255f, BackColor.B / 255f, BackColor.A / 255f);
-            Gl.glClear(Gl.GL_COLOR_BUFFER_BIT | Gl.GL_DEPTH_BUFFER_BIT);
-            Draw3D();
-            Draw2D();
-            Gl.glFlush();
-        }
+        public ICollection<LabelBase> Labels { get; }
 
         private void Draw2D()
         {
@@ -242,7 +180,6 @@ namespace UI.Controls.Viewport
             var height = Height;
 
             Gl.glClear(Gl.GL_DEPTH_BUFFER_BIT);
-            Gl.glMatrixMode(Gl.GL_PROJECTION);
             Gl.glPushMatrix();
             {
                 // Setup the 2d orthogonal projection to match the viewport
@@ -260,9 +197,7 @@ namespace UI.Controls.Viewport
                 {
                     label.Draw();
                 }
-
-                if (Legend.Visible)
-                    Legend.Draw(0, height - 200);
+                Legend.Draw(0, height - 200);
                
                 Gl.glMatrixMode(Gl.GL_PROJECTION);
             }
@@ -299,57 +234,25 @@ namespace UI.Controls.Viewport
                     }
 
                     // draw all the entities now
-                    DrawSceneObjects(_drawingMode);
+                    Gl.glPushAttrib(Gl.GL_ENABLE_BIT);
+                    {
+                        Gl.glEnable(Gl.GL_NORMALIZE);
+
+                        // Set Default Material
+                        Gl.glMaterialfv(Gl.GL_FRONT_AND_BACK, Gl.GL_SPECULAR, new[] { 0.1f, 0.1f, 0.1f, 1.0f });
+                        Gl.glMateriali(Gl.GL_FRONT_AND_BACK, Gl.GL_SHININESS, 32);
+
+                        foreach (var entity in SceneObjects)
+                        {
+                            entity.Draw();
+                        }
+                    }
+                    Gl.glPopAttrib();
                     _modelLight.SwitchOff();
 
                     Gl.glMatrixMode(Gl.GL_PROJECTION);
                 }
                 Gl.glPopMatrix();
-            }
-            Gl.glPopAttrib();
-        }
-
-        private void DrawSceneObjects(DrawingModes drawingModes)
-        {
-            Gl.glPushAttrib(Gl.GL_ENABLE_BIT);
-            {
-                Gl.glEnable(Gl.GL_NORMALIZE);
-
-                // Set Default Material
-                Gl.glMaterialfv(Gl.GL_FRONT_AND_BACK, Gl.GL_SPECULAR, new[] { 0.1f, 0.1f, 0.1f, 1.0f });
-                Gl.glMateriali(Gl.GL_FRONT_AND_BACK, Gl.GL_SHININESS, 32);
-
-                if ((drawingModes & DrawingModes.Vertices) == DrawingModes.Vertices)
-                {
-                    Gl.glPolygonMode(Gl.GL_FRONT_AND_BACK, Gl.GL_POINT);
-                    Gl.glPointSize(1f);
-                    Gl.glDisable(Gl.GL_LIGHTING);
-                    foreach (var entity in SceneObjects)
-                    {
-                        entity.DrawVertices();
-                    }
-                }
-
-                if ((drawingModes & DrawingModes.WireFrame) == DrawingModes.WireFrame)
-                {
-                    Gl.glPolygonMode(Gl.GL_FRONT_AND_BACK, Gl.GL_LINE);
-                    Gl.glLineWidth(1f);
-                    Gl.glDisable(Gl.GL_LIGHTING);
-                    foreach (var entity in SceneObjects)
-                    {
-                        entity.DrawWireFrame();
-                    }
-                }
-
-                if ((drawingModes & DrawingModes.Shaded) == DrawingModes.Shaded)
-                {
-                    Gl.glEnable(Gl.GL_LIGHTING);
-                    Gl.glPolygonMode(Gl.GL_FRONT_AND_BACK, Gl.GL_FILL);
-                    foreach (var entity in SceneObjects)
-                    {
-                        entity.Draw();
-                    }
-                }
             }
             Gl.glPopAttrib();
         }
@@ -360,55 +263,28 @@ namespace UI.Controls.Viewport
             Invalidate();
             base.OnMouseWheel(e);
         }
-
-        protected override void OnMouseUp(MouseEventArgs e)
-        {
-            _endPoint = Point2.Origin;
-            _startPoint = Point2.Origin;
-
-            // only reset the cursor if we're not in box selection modes
-            Cursor = Cursors.Default;
-
-            base.OnMouseUp(e);
-        }
-
+        
         protected override void OnMouseDown(MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
             {
-                Focus();
-
-                switch (_action)
-                {
-                    case ActionType.Pan:
-                        Cursor = Cursors.SizeAll;
-                        break;
-                }
+                _startPointX = e.X;
+                _startPointY = e.Y;
             }
             base.OnMouseDown(e);
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left && _action != ActionType.None)
+            if (e.Button == MouseButtons.Left)
             {
-                switch (_action)
-                {
-                    case ActionType.Pan:
-                        _endPoint = new Point2(e.X, e.Y);
-                        _camera.Pan(_startPoint.X - _endPoint.X, (_startPoint.Y - _endPoint.Y) * -1);
-                        _startPoint = _endPoint;
-                        break;
-                    case ActionType.Zoom:
-                        _endPoint = new Point2(e.X, e.Y);
-                        _camera.Zoom(_endPoint.Y - _startPoint.Y);
-                        _startPoint = _endPoint;
-                        break;
-                }
-
+                var endPointX = e.X;
+                var endPointY = e.Y;
+                _camera.Pan(_startPointX - endPointX, -(_startPointY - endPointY));
+                _startPointX = endPointX;
+                _startPointY = endPointY;
                 Invalidate();
             }
-
             base.OnMouseMove(e);
         }
 
@@ -427,30 +303,32 @@ namespace UI.Controls.Viewport
             Gl.glLoadIdentity();
             _camera.TransformModelViewMatrix();
 
-            var boundingRect = AxisAlignedBox2.Empty;
+            var allMinX = float.MaxValue;
+            var allMinY = float.MaxValue;
+            var allMaxX = float.MinValue;
+            var allMaxY = float.MinValue;
             foreach (var entity in SceneObjects)
             {
-                var rect = entity.DisplayBoundingRect();
+                entity.WindowExtents(out var minX, out var maxX, out var minY, out var maxY);
 
-                if (boundingRect == AxisAlignedBox2.Empty)
-                    boundingRect = rect;
-                else if (rect != AxisAlignedBox2.Empty)
-                    boundingRect = AxisAlignedBox2.Union(boundingRect, rect);
+                if (minX < allMinX)
+                    allMinX = minX;
+                if (maxX > allMaxX)
+                    allMaxX = maxX;
+                if (minY < allMinY)
+                    allMinY = minY;
+                if (maxY > allMaxY)
+                    allMaxY = maxY;
             }
 
-            if (boundingRect != AxisAlignedBox2.Empty)
+            if (allMinX != float.MaxValue && allMinY != float.MaxValue && allMaxX != float.MinValue && allMaxY != float.MinValue)
             {
+                //return AxisAlignedBox2.FromExtents(minX, minY, maxX, maxY);
                 // add a margin around the model
                 // zoom to the extents of the bounding rectangle
-                _camera.ZoomWindow(AxisAlignedBox2.Inflate(boundingRect, 1f, 1f));
+                _camera.ZoomWindow((allMaxX + allMinX) / 2f, (allMaxY + allMinY) / 2f, allMaxX - allMinX + 3f, allMaxY - allMinY + 3f);
                 Invalidate();
             }
-        }
-
-        public void TopView()
-        {
-//            _camera.TopView();
-            Invalidate();
         }
     }
 }

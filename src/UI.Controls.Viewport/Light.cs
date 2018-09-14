@@ -1,5 +1,4 @@
 using System;
-using Core.Geometry;
 using Tao.OpenGl;
 
 namespace UI.Controls.Viewport
@@ -10,12 +9,12 @@ namespace UI.Controls.Viewport
         private readonly float _diffuseLevel;
         private readonly int _lightIndex;
         private readonly float _specularLevel;
-        private readonly Point3 _position;
+        private readonly float _x, _y, _z;
 
         /// <summary>
-        ///     Create a neutral colored light source i.e. (R=G=B)
+        /// Create a neutral colored light source i.e. (R=G=B)
         /// </summary>
-        internal Light(int lightIndex, float diffuse, float specular, float ambient, Point3 position)
+        internal Light(int lightIndex, float diffuse, float specular, float ambient, float x, float y, float z)
         {
             if (diffuse < 0.0f || diffuse > 1.0f)
                 throw new ArgumentOutOfRangeException(nameof(diffuse), diffuse, "Diffuse lighting level must be in the range of 0-1");
@@ -29,13 +28,15 @@ namespace UI.Controls.Viewport
             _ambientLevel = ambient;
             _specularLevel = specular;
             _lightIndex = lightIndex;
-            _position = position;
+            _x = x;
+            _y = y;
+            _z = z;
         }
 
         public void SwitchOn()
         {
             Gl.glEnable(_lightIndex);
-            Gl.glLightfv(_lightIndex, Gl.GL_POSITION, new[] {_position.X, _position.Z, -_position.Y, 1f});
+            Gl.glLightfv(_lightIndex, Gl.GL_POSITION, new[] {_x, _z, -_y, 1f});
             Gl.glLightfv(_lightIndex, Gl.GL_AMBIENT, new[] {_ambientLevel, _ambientLevel, _ambientLevel, 1f});
             Gl.glLightfv(_lightIndex, Gl.GL_DIFFUSE, new[] {_diffuseLevel, _diffuseLevel, _diffuseLevel, 1f});
             Gl.glLightfv(_lightIndex, Gl.GL_SPECULAR, new[] {_specularLevel, _specularLevel, _specularLevel, 1f});

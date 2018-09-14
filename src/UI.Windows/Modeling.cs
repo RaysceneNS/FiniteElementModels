@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Core.Algorithm;
 using Core.Fea;
 using UI.Controls.Viewport;
-using Label = System.Windows.Forms.Label;
 
 namespace UI.Windows
 {
@@ -44,24 +43,23 @@ namespace UI.Windows
             return model;
         }
 
-        public static async Task DoWork(Viewport viewport, Label progressBar)
+        public static async Task DoWork(Viewport viewport)
         {
-            progressBar.Visible = true;
-            viewport.Legend.Visible = false;
+            viewport.Labels.Clear();
 
             var progressReport = new Progress<TaskProgress>(progress =>
             {
-                progressBar.Text = progress.Text + " (" + progress.ProgressPercentage + "%)";
-                System.Diagnostics.Trace.WriteLine(progress.Text);
+                System.Diagnostics.Trace.WriteLine(progress.Text + " (" + progress.ProgressPercentage + "%)");
             });
 
             var model = BracketModel(progressReport);
 
             //build a scene to display this model
-            viewport.SceneObjects.Add(new FeaScene(model, 0.1f));
-            viewport.Invalidate();
+            var scene = new FeaScene(model);
+            scene.Compile();
+            viewport.SceneObjects.Add(scene);
+            viewport.LookAt(scene);
             viewport.ZoomExtents();
-            viewport.DrawingMode = DrawingModes.WireFrame;
             
             // Solve the unknowns in the Finite Element model
             await Task.Run(() => new PlanarStressSolver(model, 10, 30000, 0.25f).SolvePlaneStress(progressReport));
@@ -73,29 +71,19 @@ namespace UI.Windows
                 await Task.Run(() => model.PlotAverageVonMises());
             }
 
-            viewport.Legend.SetRange("Avg. Von Mises", model.MaxNodeValue, model.MinNodeValue);
-            viewport.Legend.Visible = true;
+            scene.Compile();
+            viewport.Legend.Show("Avg. Von Mises", model.MaxNodeValue, model.MinNodeValue);
 
-            AddLabels(viewport, model);
-            
-            viewport.SceneObjects.Compile();
-
-            progressBar.Visible = false;
-            viewport.DrawingMode = DrawingModes.Shaded;
-        }
-
-        private static void AddLabels(Viewport viewport, Model fm)
-        {
-            viewport.Labels.Clear();
-            
             viewport.Labels.Add(new LabelFlag(
-                fm.MaxNode.X + fm.MaxNode.FreedomX,
-                fm.MaxNode.Y + fm.MaxNode.FreedomY,
+                model.MaxNode.X + model.MaxNode.FreedomX,
+                model.MaxNode.Y + model.MaxNode.FreedomY,
                 0,
                 "max",
                 SystemFonts.DefaultFont,
                 Color.Beige,
                 Color.Black));
+            
+            viewport.Invalidate();
         }
     }
 }

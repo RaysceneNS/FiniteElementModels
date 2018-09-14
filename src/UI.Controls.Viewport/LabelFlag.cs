@@ -3,7 +3,6 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
-using Core.Geometry;
 
 namespace UI.Controls.Viewport
 {
@@ -15,7 +14,7 @@ namespace UI.Controls.Viewport
         private readonly Color _backgroundColor;
 
         public LabelFlag(float x, float y, float z, string text, Font textFont, Color textColor, Color backgroundColor)
-            : base(new Point3(x, y, z))
+            : base(x, y, z)
         {
             _text = text;
             _textFont = textFont;

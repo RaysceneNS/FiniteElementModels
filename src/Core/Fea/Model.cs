@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Core.Geometry;
 
 namespace Core.Fea
 {
@@ -17,36 +16,6 @@ namespace Core.Fea
         public List<Node> Nodes { get; }
 
         public List<Element> Elements { get; }
-
-        /// <summary>
-        /// Calculates the entity's bounding box.
-        /// </summary>
-        /// <returns></returns>
-        public AxisAlignedBox3 AxisAlignedBoundingBox()
-        {
-            var minX = float.MaxValue;
-            var minY = float.MaxValue;
-            var maxX = float.MinValue;
-            var maxY = float.MinValue;
-            var minZ = float.MinValue;
-            var maxZ = float.MinValue;
-
-            foreach (var node2D in this.Nodes)
-            {
-                if (node2D.X < minX)
-                    minX = node2D.X;
-                if (node2D.X > maxX)
-                    maxX = node2D.X;
-                if (node2D.Y < minY)
-                    minY = node2D.Y;
-                if (node2D.Y > maxY)
-                    maxY = node2D.Y;
-                minZ = 0f;
-                maxZ = 0f;
-            }
-
-            return AxisAlignedBox3.FromExtents(minX, minY, minZ, maxX, maxY, maxZ);
-        }
 
         public bool IsSolved { get; set; }
 
@@ -171,7 +140,9 @@ namespace Core.Fea
             foreach (var node in this.Nodes)
             {
                 var avg = (node.VonMises - min) / range;
-                node.ColorIndex = MathCore.Clamp(0, (int)(avg * 255), 255);
+                var idx = (int) (avg * 255);
+
+                node.ColorIndex = idx;
             }
         }
 

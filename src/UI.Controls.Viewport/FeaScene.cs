@@ -1,6 +1,5 @@
 ﻿using System;
 using Core.Fea;
-using Core.Geometry;
 using Tao.OpenGl;
 
 namespace UI.Controls.Viewport
@@ -12,17 +11,11 @@ namespace UI.Controls.Viewport
         private bool _displayListsCreated;
         private int _loadSymbolList, _constraintSymbolList;
 
-        public FeaScene(Model model, float symbolSize)
+        public FeaScene(Model model, float symbolSize = 0.1f)
             : base()
         {
             _model = model;
-
             CreateSymbols(symbolSize);
-        }
-
-        public override AxisAlignedBox3 AxisAlignedBoundingBox()
-        {
-            return _model.AxisAlignedBoundingBox();
         }
 
         private void CreateSymbols(float scale)
@@ -42,34 +35,66 @@ namespace UI.Controls.Viewport
             Gl.glEndList();
         }
 
-        internal override AxisAlignedBox2 DisplayBoundingRect()
+        internal override void ModelExtents(out float minX, out float maxX, out float minY, out float maxY)
         {
-            var minX = float.MaxValue;
-            var minY = float.MaxValue;
-            var maxX = float.MinValue;
-            var maxY = float.MinValue;
+            minX = float.MaxValue;
+            minY = float.MaxValue;
+            maxX = float.MinValue;
+            maxY = float.MinValue;
+            foreach (var node2D in _model.Nodes)
+            {
+                if (node2D.X < minX)
+                    minX = node2D.X;
+                if (node2D.X > maxX)
+                    maxX = node2D.X;
+                if (node2D.Y < minY)
+                    minY = node2D.Y;
+                if (node2D.Y > maxY)
+                    maxY = node2D.Y;
+            }
+        }
+        
+        internal override void WindowExtents(out float vminX, out float vmaxX, out float vminY, out float vmaxY)
+        {
+            var minX = double.MaxValue;
+            var minY = double.MaxValue;
+            var maxX = double.MinValue;
+            var maxY = double.MinValue;
+
+            var modelMatrix = new double[16];
+            var projMatrix = new double[16];
+            var viewport = new int[4];
+
+            Gl.glGetDoublev(Gl.GL_MODELVIEW_MATRIX, modelMatrix);
+            Gl.glGetDoublev(Gl.GL_PROJECTION_MATRIX, projMatrix);
+            Gl.glGetIntegerv(Gl.GL_VIEWPORT, viewport);
 
             // project the screen vertices into the array
             foreach (var node in _model.Nodes)
             {
-                var point = Project(node.X, node.Y, 0.0);
+                if (Glu.gluProject(node.X, node.Y, 0, modelMatrix, projMatrix, viewport, out var x, out var y, out var _) == Gl.GL_FALSE)
+                    throw new GLException("Call to gluProject() failed.");
 
-                if (point.X < minX)
-                    minX = point.X;
-                if (point.X > maxX)
-                    maxX = point.X;
+                if (x < minX)
+                    minX = x;
+                if (x > maxX)
+                    maxX = x;
 
-                if (point.Y < minY)
-                    minY = point.Y;
-                if (point.Y > maxY)
-                    maxY = point.Y;
+                if (y < minY)
+                    minY = y;
+                if (y > maxY)
+                    maxY = y;
             }
 
-            return AxisAlignedBox2.FromExtents(minX, minY, maxX, maxY);
+            vmaxX = (float) maxX;
+            vmaxY = (float) maxY;
+            vminX = (float) minX;
+            vminY = (float) minY;
         }
         
         internal override void Draw()
         {
+            Gl.glPolygonMode(Gl.GL_FRONT_AND_BACK, Gl.GL_FILL);
             Gl.glEnable(Gl.GL_LIGHTING);
 
             if (_model.IsSolved && this._displayListsCreated)
@@ -78,7 +103,7 @@ namespace UI.Controls.Viewport
                 Gl.glCallList(this._elementList);
 
                 //draw edges
-                Gl.glLineWidth(2f);
+                Gl.glLineWidth(5f);
                 Gl.glColor3ub(0, 0, 0);
                 Gl.glCallList(this._edgeDisplayList);
 
@@ -96,7 +121,9 @@ namespace UI.Controls.Viewport
             }
             else
             {
+                Gl.glPolygonMode(Gl.GL_FRONT_AND_BACK, Gl.GL_LINE);
                 Gl.glLineWidth(1f);
+                Gl.glDisable(Gl.GL_LIGHTING);
                 Gl.glColor3ub(0, 0, 0);
                 Gl.glCallList(this._meshList);
             }
@@ -136,34 +163,21 @@ namespace UI.Controls.Viewport
             {
                 if (!node.Loaded)
                     continue;
+
                 Gl.glColor3ub(0xCC, 0x33, 0x0);
 
-                var vector = new Vector3(node.Load[0], node.Load[1], 0f);
+                //rotate the load arrows
+                var angleOnXy = (float) (Math.Atan2(node.Load[1], node.Load[0]) * 180.0 / Math.PI);
+                var angleFromXy = (float) (Math.Atan2(0, Math.Sqrt(node.Load[0] * node.Load[0] + node.Load[1] * node.Load[1])) * 180.0 / Math.PI);
+
                 Gl.glPushMatrix();
                 Gl.glTranslatef(node.X, node.Y, 0f);
-                Gl.glRotatef(vector.AngleOnXy(), 0f, 0f, 1f);
-                Gl.glRotatef(vector.AngleFromXy() + 90f, 0f, -1f, 0f);
+                Gl.glRotatef(angleOnXy, 0f, 0f, 1f);
+                Gl.glRotatef(angleFromXy + 90f, 0f, -1f, 0f);
                 Gl.glCallList(loadSymbolSize);
                 Gl.glPopMatrix();
             }
         }
-
-        internal override void DrawVertices()
-        {
-            if (this._model.Nodes == null)
-                return;
-            foreach (var node in this._model.Nodes)
-            {
-                Gl.glVertex2d(node.X, node.Y);
-            }
-        }
-
-        internal override void DrawWireFrame()
-        {
-            Gl.glColor3ub(0, 0, 0);
-            Gl.glCallList(this._meshList);
-        }
-
 
         public void Dispose()
         {
@@ -194,7 +208,7 @@ namespace UI.Controls.Viewport
             this._edgeDisplayList = 0;
         }
 
-        internal override void Compile()
+        public void Compile()
         {
             if (_model.IsSolved)
             {

@@ -18,7 +18,7 @@
     </SccAuxPath>
     <SccProvider>
     </SccProvider>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>2.0</OldToolsVersion>
@@ -69,13 +69,7 @@
     <Compile Include="Fea\Model.cs" />
     <Compile Include="Fea\Node.cs" />
     <Compile Include="Fea\PlanarStressSolver.cs" />
-    <Compile Include="Geometry\Point2.cs" />
-    <Compile Include="Geometry\Point3.cs" />
-    <Compile Include="Geometry\AxisAlignedBox2.cs" />
-    <Compile Include="Geometry\AxisAlignedBox3.cs" />
-    <Compile Include="Geometry\Size2.cs" />
-    <Compile Include="Geometry\Vector3.cs" />
-    <Compile Include="Geometry\MathCore.cs" />
+    <Compile Include="Algorithm\Point2.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

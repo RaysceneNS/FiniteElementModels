@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using Core.Geometry;
 using Tao.OpenGl;
 
 namespace UI.Controls.Viewport
@@ -14,10 +12,10 @@ namespace UI.Controls.Viewport
         private int ViewportHeight { get; set; }
         private float ModelDistance { get; }
 
-        private Point3 _modelCenter;
+        private float _modelX, _modelY, _modelZ;
         private float _modelExtent;
-        private Point2 _panPosition;
-        private Size2 _zoomSize;
+        private float _panPositionX, _panPositionY;
+        private float _zoomWidth, _zoomHeight;
 
         internal Camera()
         {
@@ -26,14 +24,14 @@ namespace UI.Controls.Viewport
 
         internal void Reset()
         {
-            _panPosition = new Point2(ViewportWidth / 2f, ViewportHeight / 2f);
-            _zoomSize = new Size2(ViewportWidth, ViewportHeight);
+            _panPositionX = ViewportWidth / 2f;
+            _panPositionY = ViewportHeight / 2f;
+            _zoomWidth = ViewportWidth;
+            _zoomHeight = ViewportHeight;
         }
 
         internal void ResizeViewport(int width, int height)
         {
-            Debug.Assert(width != 0 && height != 0);
-
             // zero width or height will have bad consequences
             if (height == 0 || width == 0)
                 return;
@@ -46,30 +44,30 @@ namespace UI.Controls.Viewport
                 float zoomWidth, zoomHeight;
 
                 // construct a new zoom window that will give the appearance of being the same relative zoom and pan
-                if (_zoomSize.Width / ViewportWidth < _zoomSize.Height / ViewportHeight)
+                if (_zoomWidth / ViewportWidth < _zoomHeight / ViewportHeight)
                 {
                     //constrain the minimum and maximum zoom extents
-                    zoomHeight = MathCore.Clamp(0.0001f,
-                        _zoomSize.Width * (width / (float) ViewportWidth) * (height / (float) width), 10000f);
+                    zoomHeight = Clamp(0.0001f,
+                        _zoomWidth * (width / (float) ViewportWidth) * (height / (float) width), 10000f);
                     // maintain the aspect ratio of the viewport
                     zoomWidth = zoomHeight * (width / (float) height);
                 }
                 else
                 {
                     //constrain the minimum and maximum zoom extents
-                    zoomWidth = MathCore.Clamp(0.0001f,
-                        _zoomSize.Height * (height / (float) ViewportHeight) * (width / (float) height), 10000f);
+                    zoomWidth = Clamp(0.0001f,
+                        _zoomHeight * (height / (float) ViewportHeight) * (width / (float) height), 10000f);
                     // maintain the aspect ratio of the viewport
                     zoomHeight = zoomWidth * (height / (float) width);
                 }
 
                 // scale the pan position relative to it's old position
-                _panPosition = new Point2(
-                    _panPosition.X / _zoomSize.Width * zoomWidth,
-                    _panPosition.Y / _zoomSize.Height * zoomHeight);
+                _panPositionX = _panPositionX / _zoomWidth * zoomWidth;
+                _panPositionY = _panPositionY / _zoomHeight * zoomHeight;
 
                 // create the new window
-                _zoomSize = new Size2(zoomWidth, zoomHeight);
+                _zoomWidth = zoomWidth;
+                _zoomHeight = zoomHeight;
             }
 
             // set the new dimensions, and consequently the aspect ratio and zoom factor.
@@ -80,56 +78,65 @@ namespace UI.Controls.Viewport
         /// <summary>
         ///     Define the model position to point the camera at, as well as the extent of the model located there
         /// </summary>
-        /// <param name="position">The position.</param>
-        /// <param name="extent">The extent.</param>
-        internal void LookAtModel(Point3 position, float extent)
+        internal void LookAtModel(float x, float y, float z, float extent)
         {
-            _modelCenter = position;
+            _modelX = x;
+            _modelY = y;
+            _modelZ = z;
             _modelExtent = extent;
         }
 
         internal void Pan(float dx, float dy)
         {
             var currentZoomFactor = CurrentZoomFactor;
-            _panPosition = Point2.Offset(_panPosition, dx * currentZoomFactor, dy * currentZoomFactor);
+            _panPositionX += dx * currentZoomFactor;
+            _panPositionY += dy * currentZoomFactor;
         }
 
         internal void Zoom(float amount)
         {
-            var height = MathCore.Clamp(0.0001f, _zoomSize.Height + amount * CurrentZoomFactor, 10000f);
-            var width = _zoomSize.Height * (ViewportWidth / (float) ViewportHeight);
-            _zoomSize = new Size2(width,height);
+            var height = Clamp(0.0001f, _zoomHeight + amount * CurrentZoomFactor, 10000f);
+            var width = height * (ViewportWidth / (float) ViewportHeight);
+            _zoomWidth = width;
+            _zoomHeight = height;
         }
 
-        internal void ZoomWindow(AxisAlignedBox2 rect)
+        internal void ZoomWindow(float panX, float panY, float rectWidth, float rectHeight)
         {
-            if (rect.IsEmpty)
+            if (rectWidth <=  0 || rectHeight <= 0)
                 return;
 
             var currentZoomFactor = CurrentZoomFactor;
             float height, width;
-            if (ViewportWidth / rect.Width < ViewportHeight / rect.Height)
+            if (ViewportWidth / rectWidth < ViewportHeight / rectHeight)
             {
-                height = MathCore.Clamp(0.0001f, rect.Width * currentZoomFactor * (ViewportHeight / (float) ViewportWidth), 10000f);
+                height = Clamp(0.0001f, rectWidth * currentZoomFactor * (ViewportHeight / (float) ViewportWidth), 10000f);
                 width = height * (ViewportWidth / (float) ViewportHeight);
             }
             else
             {
-                width = MathCore.Clamp(0.0001f, rect.Height * currentZoomFactor * (ViewportWidth / (float) ViewportHeight), 10000f);
+                width = Clamp(0.0001f, rectHeight * currentZoomFactor * (ViewportWidth / (float) ViewportHeight), 10000f);
                 height = width * (ViewportHeight / (float) ViewportWidth);
             }
-            _panPosition += -_zoomSize.Center + rect.Center * currentZoomFactor;
-            _zoomSize = new Size2(width, height);
+
+            var zoomCenterX = _zoomWidth / 2f;
+            var zoomCenterY = _zoomHeight / 2f;
+
+            _panPositionX += -zoomCenterX + panX * currentZoomFactor;
+            _panPositionY += -zoomCenterY + panY * currentZoomFactor;
+
+            _zoomWidth = width;
+            _zoomHeight = height;
         }
 
         internal void TransformProjectionMatrix()
         {
-            var aspectRatio = ViewportWidth / (float)ViewportHeight;
-            Glu.gluPerspective(FIELD_OF_VIEW, aspectRatio, NEAR, FAR);
-
             // set the zoom rect
             int[] viewport = {0, 0, ViewportWidth, ViewportHeight};
-            Glu.gluPickMatrix(_panPosition.X, _panPosition.Y, _zoomSize.Width, _zoomSize.Height, viewport);
+            Glu.gluPickMatrix(_panPositionX, _panPositionY, _zoomWidth, _zoomHeight, viewport);
+
+            var aspectRatio = ViewportWidth / (float)ViewportHeight;
+            Glu.gluPerspective(FIELD_OF_VIEW, aspectRatio, NEAR, FAR);
         }
 
         internal void TransformModelViewMatrix()
@@ -137,12 +144,21 @@ namespace UI.Controls.Viewport
             Gl.glTranslatef(0f, 0f, -ModelDistance);
             var scaleToModelDistance = ModelDistance / _modelExtent;
             Gl.glScalef(scaleToModelDistance, scaleToModelDistance, scaleToModelDistance);
-            Gl.glTranslatef(-_modelCenter.X, -_modelCenter.Y, -_modelCenter.Z);
+            Gl.glTranslatef(-_modelX, -_modelY, -_modelZ);
         }
 
         private float CurrentZoomFactor
         {
-            get { return _zoomSize.Height / ViewportHeight; }
+            get { return _zoomHeight / ViewportHeight; }
+        }
+
+        private static float Clamp(float low, float val, float high)
+        {
+            if (val < low)
+                return low;
+            if (val > high)
+                return high;
+            return val;
         }
     }
 }

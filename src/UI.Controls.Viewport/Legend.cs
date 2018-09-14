@@ -2,7 +2,6 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using Core.Geometry;
 using Tao.OpenGl;
 
 namespace UI.Controls.Viewport
@@ -14,13 +13,13 @@ namespace UI.Controls.Viewport
         private readonly Font _valueFont;
         private readonly ColorScale _colorScale;
         private float _minValue, _maxValue;
-        private string _title; private Bitmap _image;
-        private bool _isDirty;
+        private string _title;
+        private Bitmap _image;
+        private bool _show;
 
         internal Legend()
         {
-            Visible = true;
-            _isDirty = true;
+            _show = false;
             _minValue = 0f;
             _maxValue = 100f;
             _colorScale = ColorScale.Gradient;
@@ -28,8 +27,6 @@ namespace UI.Controls.Viewport
             _valueFont = new Font("Tahoma", 8.25f, FontStyle.Regular);
             _titleFont = new Font("MS Sans Serif", 8.25f, FontStyle.Bold);
         }
-
-        public bool Visible { get; set; }
 
         public void Dispose()
         {
@@ -46,22 +43,17 @@ namespace UI.Controls.Viewport
                 _titleFont?.Dispose();
             }
         }
-
-        private void SetDirty()
-        {
-            _isDirty = true;
-        }
         
         internal void Draw(int x, int y)
         {
-            if (_isDirty)
-            {
-                _image = CreateImage();
-                _isDirty = false;
-            }
+            if(_show == false)
+                return;
 
             if (_image == null)
-                return;
+            {
+                _image = CreateImage();
+            }
+
             Gl.glPushAttrib(Gl.GL_ENABLE_BIT | Gl.GL_COLOR_BUFFER_BIT);
             {
                 Gl.glBlendFunc(Gl.GL_SRC_ALPHA, Gl.GL_ONE_MINUS_SRC_ALPHA);
@@ -83,13 +75,13 @@ namespace UI.Controls.Viewport
             Gl.glPopAttrib();
         }
         
-
-        public void SetRange(string title, float max, float min)
+        public void Show(string title, float max, float min)
         {
             _title = title;
             _maxValue = max;
             _minValue = min;
-            SetDirty();
+            _image = null;
+            _show = true;
         }
 
         private Bitmap CreateImage()
@@ -145,7 +137,8 @@ namespace UI.Controls.Viewport
                 var myPositions = new float[NUMBER_OF_VALUES + 1];
                 for (var i = 0; i <= NUMBER_OF_VALUES; i++)
                 {
-                    var index = MathCore.Clamp(0, length - (int) (i * length / (float) NUMBER_OF_VALUES), length);
+                    var index = length - (int) (i * length / (float) NUMBER_OF_VALUES);
+                    
                     myColors[i] = _colorScale[index];
                     myPositions[i] = i / (float) NUMBER_OF_VALUES;
                 }
