@@ -339,14 +339,7 @@ namespace Core.Algorithm
             }
         }
 
-        /// <summary>
-        ///     Gets the length of the min edge.
-        /// </summary>
         public double MinEdgeLength { get; private set; }
-
-        /// <summary>
-        ///     Gets the length of the max edge.
-        /// </summary>
         public double MaxEdgeLength { get; private set; }
 
         /// <summary>
@@ -658,7 +651,7 @@ namespace Core.Algorithm
             var model = new Model(_vertices.Count, _faces.Count);
             foreach (var tf in this._vertices)
             {
-                model.AddNode(new Node(tf.X, tf.Y));
+                model.Nodes.Add(new Node(tf.X, tf.Y));
             }
             if (this._faces.First == null)
                 return model;
@@ -667,7 +660,7 @@ namespace Core.Algorithm
             while (firstFace != null)
             {
                 var triangleFace = firstFace.Value;
-                model.AddElement(new Element(triangleFace.v1, triangleFace.v3, triangleFace.v2));
+                model.Elements.Add(new Element(triangleFace.v1, triangleFace.v3, triangleFace.v2));
                 firstFace = firstFace.Next;
             }
             return model;

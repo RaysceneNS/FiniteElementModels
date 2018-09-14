@@ -14,11 +14,11 @@ namespace Core.Fea
         private readonly float _poissonsRatio;
         private readonly float _minimumLoad;
         private int _numElements;
-        private readonly Model _mesh;
+        private readonly Model _model;
 
-        public PlanarStressSolver(Model mesh, float thickness, float youngsModulus, float poissonsRatio)
+        public PlanarStressSolver(Model model, float thickness, float youngsModulus, float poissonsRatio)
         {
-            this._mesh = mesh;
+            this._model = model;
             this._minimumLoad = 0.001f;
 
             this._thickness = thickness;
@@ -28,13 +28,11 @@ namespace Core.Fea
 
         public void SolvePlaneStress(IProgress<TaskProgress> progressReport)
         {
-            this._mesh.IsSolved = false;
-            
             // set an i at each node
             var counter = 0;
-            for (var i = 0; i < this._mesh.NodeCount; i++)
+            foreach (var node in this._model.Nodes)
             {
-                this._mesh.Node(i).SetIndex(counter++);
+                node.SetIndex(counter++);
             }
             this._numElements = counter * DEGREES_OF_FREEDOM;
 
@@ -44,29 +42,28 @@ namespace Core.Fea
             var loads = new float[this._numElements];
 
             //copy loadings and constraints into triangles arrays
-            for (var i = 0; i < this._mesh.NodeCount; i++)
+            foreach (var node in this._model.Nodes)
             {
-                var node = this._mesh.Node(i);
                 if (node.Loaded)
                 {
-                    loads[node.Index * DEGREES_OF_FREEDOM] = node.Load[0];
-                    loads[node.Index * DEGREES_OF_FREEDOM + 1] = node.Load[1];
+                    loads[node.Index * DEGREES_OF_FREEDOM] = node.LoadX;
+                    loads[node.Index * DEGREES_OF_FREEDOM + 1] = node.LoadY;
                 }
 
                 if (node.Constrained)
                 {
                     // x constraint?
-                    if (node.Constraint[0])
+                    if (node.ConstraintX)
                     {
                         isDisplaced[node.Index * DEGREES_OF_FREEDOM] = true;
-                        displacements[node.Index * DEGREES_OF_FREEDOM] = node.Displacement[0];
+                        displacements[node.Index * DEGREES_OF_FREEDOM] = node.DisplacementX;
                     }
 
                     // y constraint?
-                    if (node.Constraint[1])
+                    if (node.ConstraintY)
                     {
                         isDisplaced[node.Index * DEGREES_OF_FREEDOM + 1] = true;
-                        displacements[node.Index * DEGREES_OF_FREEDOM + 1] = node.Displacement[1];
+                        displacements[node.Index * DEGREES_OF_FREEDOM + 1] = node.DisplacementY;
                     }
                 }
             }
@@ -85,7 +82,7 @@ namespace Core.Fea
 
                 AddToStiffnessMatrix(localStiffness, out stiffnessIndexes[i], out stiffnessMatrix[i]);
 
-                var progressPercent = (int)(100f * i / (double)this._numElements);
+                var progressPercent = (int)(100f * i / this._numElements);
                 if (progressPercent > lastProgressPercent)
                 {
                     lastProgressPercent = progressPercent;
@@ -100,30 +97,27 @@ namespace Core.Fea
 
             //modify the stiffness matrix to enforce the constraints
             counter = 0;
-            for (var i = 0; i < this._mesh.NodeCount; i++)
+            foreach (var node in this._model.Nodes)
             {
-                this._mesh.Node(i).SetFreedom(forces[counter], forces[counter + 1]);
+                node.SetFreedom(forces[counter], forces[counter + 1]);
                 counter += 2;
             }
 
             // solve the system of linear equations for the unknown displacements
             lastProgressPercent = 0;
-            for (var i = 0; i < this._mesh.ElementCount; i++)
+            for (var i = 0; i < this._model.Elements.Count; i++)
             {
-                var element = this._mesh.Element(i);
+                var element = this._model.Elements[i];
                 var localUnknowns = new float[DEGREES_OF_FREEDOM * 3];
 
                 for (var j = 0; j < 3; j ++ )
                 {
-                    for (var k = 0; k < DEGREES_OF_FREEDOM; k++)
-                    {
-                        localUnknowns[j * DEGREES_OF_FREEDOM + k] = forces[element.Connection[j] * DEGREES_OF_FREEDOM + k];
-                    }
+                    localUnknowns[j * DEGREES_OF_FREEDOM + 0] = forces[element.Connection[j] * DEGREES_OF_FREEDOM + 0];
+                    localUnknowns[j * DEGREES_OF_FREEDOM + 1] = forces[element.Connection[j] * DEGREES_OF_FREEDOM + 1];
                 }
+                element.CalculateStress(localUnknowns);
 
-                element.CalcVonMises(localUnknowns);
-
-                var progressPercent = (int)(100f * i / this._mesh.ElementCount);
+                var progressPercent = (int)(100f * i / this._model.Elements.Count);
                 if (progressPercent > lastProgressPercent)
                 {
                     lastProgressPercent = progressPercent;
@@ -131,7 +125,6 @@ namespace Core.Fea
                     progressReport.Report(new TaskProgress { Text = "Solving / Stress recovery ...", ProgressPercentage = progressPercent });
                 }
             }
-            this._mesh.IsSolved = true;
         }
 
         private void SolveEquations(float[] forces, float[] loads, float[][] stiffnessValues, int[][] stiffnessIndexes)
@@ -185,9 +178,9 @@ namespace Core.Fea
         {
             var num = index / DEGREES_OF_FREEDOM;
             const int NODE_COUNT = 3;
-            for (var i = 0; i < this._mesh.ElementCount; i++ )
+            for (var i = 0; i < this._model.Elements.Count; i++ )
             {
-                var element = this._mesh.Element(i);
+                var element = this._model.Elements[i];
 
                 var flag = false;
                 var connections = new int[NODE_COUNT];
@@ -204,9 +197,9 @@ namespace Core.Fea
                 if (flag)
                 {
                     // get the nodes at the corners of the element
-                    var node1 = _mesh.Node(element.Connection[0]);
-                    var node2 = _mesh.Node(element.Connection[1]);
-                    var node3 = _mesh.Node(element.Connection[2]);
+                    var node1 = _model.Nodes[element.Connection[0]];
+                    var node2 = _model.Nodes[element.Connection[1]];
+                    var node3 = _model.Nodes[element.Connection[2]];
                     var x1 = node1.X;
                     var y1 = node1.Y;
                     var x2 = node2.X;

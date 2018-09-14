@@ -1,5 +1,6 @@
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using Core.Algorithm;
 
 namespace Core.Fea
 {
@@ -10,69 +11,23 @@ namespace Core.Fea
         {
             this.Nodes = new List<Node>(numNodes);
             this.Elements = new List<Element>(numElements);
+            this.Edges = new LinkedList<ElementEdge>();
         }
 
-        public LinkedList<ElementEdge> Edges { get; private set; }
-
+        public LinkedList<ElementEdge> Edges { get; }
         public List<Node> Nodes { get; }
-
         public List<Element> Elements { get; }
 
-        public bool IsSolved { get; set; }
-
-        public int ElementCount
-        {
-            get
-            {
-                return this.Elements.Count;
-            }
-        }
+        public bool IsSolved { get; private set; }
         
-        public int NodeCount
-        {
-            get
-            {
-                return this.Nodes.Count;
-            }
-        }
-
         public float MaxNodeValue { get; private set; }
-
         public float MinNodeValue { get; private set; }
 
         public Node MaxNode { get; private set; }
-
         public Node MinNode { get; private set; }
-
-        public Node Node(int index)
-        {
-            return this.Nodes[index];
-        }
-
-        public Element Element(int index)
-        {
-            return this.Elements[index];
-        }
-
-        public void AddNode(Node node)
-        {
-            this.Nodes.Add(node);
-        }
-
-        public void AddElement(Element element)
-        {
-            this.Elements.Add(element);
-        }
         
         public void ComputeEdges()
         {
-            //determine the boundary polygon by eliminating any triangles that share edges with another
-            if (this.Edges != null)
-            {
-                return;
-            }
-
-            this.Edges = new LinkedList<ElementEdge>();
             foreach (var element in this.Elements)
             {
                 var cn1 = element.NodeList[0];
@@ -129,7 +84,8 @@ namespace Core.Fea
 
             foreach (var node in this.Nodes)
             {
-                node.SetStress(elementStresses[node.Index, 0] / elementCounts[node.Index], elementStresses[node.Index, 1] / elementCounts[node.Index], elementStresses[node.Index, 2] / elementCounts[node.Index]);
+                var attachCount = elementCounts[node.Index];
+                node.SetStress(elementStresses[node.Index, 0] / attachCount, elementStresses[node.Index, 1] / attachCount, elementStresses[node.Index, 2] / attachCount);
 
                 if (node.VonMises < min)
                 {
@@ -152,9 +108,17 @@ namespace Core.Fea
             {
                 var avg = (node.VonMises - min) / range;
                 var idx = (int) (avg * 255);
-
+                if (idx < 0)
+                    idx = 0;
                 node.ColorIndex = idx;
             }
+        }
+
+        public void Solve(Progress<TaskProgress> progressReport)
+        {
+            IsSolved = false;
+            new PlanarStressSolver(this, 10, 30000, 0.25f).SolvePlaneStress(progressReport);
+            IsSolved = true;
         }
     }
 }

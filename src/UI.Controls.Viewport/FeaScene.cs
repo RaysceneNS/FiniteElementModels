@@ -137,7 +137,7 @@ namespace UI.Controls.Viewport
                     continue;
                 Gl.glColor3ub(0x0, 0xCC, 0x33);
 
-                if (node.Constraint[0])
+                if (node.ConstraintX)
                 {
                     Gl.glPushMatrix();
                     Gl.glTranslatef(node.X, node.Y, 0f);
@@ -146,7 +146,7 @@ namespace UI.Controls.Viewport
                     Gl.glPopMatrix();
                 }
 
-                if (node.Constraint[1])
+                if (node.ConstraintY)
                 {
                     Gl.glPushMatrix();
                     Gl.glTranslatef(node.X, node.Y, 0f);
@@ -167,8 +167,8 @@ namespace UI.Controls.Viewport
                 Gl.glColor3ub(0xCC, 0x33, 0x0);
 
                 //rotate the load arrows
-                var angleOnXy = (float) (Math.Atan2(node.Load[1], node.Load[0]) * 180.0 / Math.PI);
-                var angleFromXy = (float) (Math.Atan2(0, Math.Sqrt(node.Load[0] * node.Load[0] + node.Load[1] * node.Load[1])) * 180.0 / Math.PI);
+                var angleOnXy = (float) (Math.Atan2(node.LoadY, node.LoadX) * 180.0 / Math.PI);
+                var angleFromXy = (float) (Math.Atan2(0, Math.Sqrt(node.LoadX * node.LoadX + node.LoadY * node.LoadY)) * 180.0 / Math.PI);
 
                 Gl.glPushMatrix();
                 Gl.glTranslatef(node.X, node.Y, 0f);

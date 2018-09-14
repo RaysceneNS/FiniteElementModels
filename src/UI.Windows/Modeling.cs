@@ -62,7 +62,7 @@ namespace UI.Windows
             viewport.ZoomExtents();
             
             // Solve the unknowns in the Finite Element model
-            await Task.Run(() => new PlanarStressSolver(model, 10, 30000, 0.25f).SolvePlaneStress(progressReport));
+            await Task.Run(() => model.Solve(progressReport));
 
             // if the solver was not interrupted
             if (model.IsSolved)

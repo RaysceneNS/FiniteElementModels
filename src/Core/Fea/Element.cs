@@ -58,10 +58,9 @@ namespace Core.Fea
             return (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2)) / 2f;
         }
 
-        internal void CalcVonMises(float[] localUnknowns)
+        internal void CalculateStress(float[] localUnknowns)
         {
             this.Stress = Matrix.Multiply(this.Material, Matrix.Multiply(this._b, localUnknowns));
-            this.VonMises = VonMises3D(this.Stress[0], this.Stress[1], 0, this.Stress[2], 0, 0);
         }
 
         internal static float VonMises3D(float sx, float sy, float sz, float txy, float txz, float tyz)
@@ -82,9 +81,7 @@ namespace Core.Fea
         private float[,] Material { get; set; }
         
         public float[] Stress { get; private set; }
-
-        public float VonMises { get; private set; }
-
+        
         internal int[] Connection { get; }
 
         internal float[,] Stiffness { get; private set; }

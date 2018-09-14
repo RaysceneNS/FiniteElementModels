@@ -2,36 +2,26 @@ namespace Core.Fea
 {
     public class Node
     {
-        private float[] _freedom;
-
         public Node(float x, float y)
         {
             this.X = x;
             this.Y = y;
-            this.Constraint = null;
-            this.Displacement = null;
-            this._freedom = new float[2];
-            this.Load = null;
         }
 
         public void FixAll()
         {
-            if (this.Constraint == null)
-                this.Constraint = new bool[3];
+            this.ConstraintX = true;
+            this.ConstraintY = true;
 
-            this.Constraint[0] = true;
-            this.Constraint[1] = true;
-
-            if (this.Displacement == null)
-                this.Displacement = new float[3];
-
-            this.Displacement[0] = 0;
-            this.Displacement[1] = 0;
+            this.DisplacementX = 0;
+            this.DisplacementY = 0;
         }
 
         public void ApplyLoad(float loadInX, float loadInY)
         {
-            this.Load = new [] { loadInX, loadInY };
+            this.LoadX = loadInX;
+            this.LoadY = loadInY;
+            Loaded = true;
         }
 
         internal void SetStress(float sx, float sy, float sz)
@@ -47,54 +37,37 @@ namespace Core.Fea
 
         internal void SetFreedom(float ux, float uy)
         {
-            this._freedom = new [] { ux, uy };
+            FreedomX = ux;
+            FreedomY = uy;
         }
 
         public int ColorIndex { get; set; }
+        public int Index { get; private set; }
 
         public bool Constrained
         {
-            get
-            {
-                return this.Constraint != null;
-            }
+            get { return this.ConstraintX || ConstraintY; }
         }
 
-        public bool[] Constraint { get; private set; }
-        internal float[] Displacement { get; private set; }
-        public int Index { get; private set; }
-        public float[] Load { get; private set; }
+        public bool ConstraintX { get; private set; }
+        public bool ConstraintY { get; private set; }
 
-        public bool Loaded
-        {
-            get
-            {
-                return this.Load != null;
-            }
-        }
-        
+        public float DisplacementX { get; private set; }
+        public float DisplacementY { get; private set; }
+
+
+        public float LoadX { get; private set; }
+        public float LoadY { get; private set; }
+        public bool Loaded { get; private set; }
+
         public float[] Stress { get; private set; }
         
-        public float FreedomX
-        {
-            get
-            {
-                return this._freedom[0];
-            }
-        }
-
-        public float FreedomY
-        {
-            get
-            {
-                return this._freedom[1];
-            }
-        }
+        public float FreedomX { get; private set; }
+        public float FreedomY { get; private set; }
 
         public float VonMises { get; private set; }
 
         public float X { get; }
-
         public float Y { get; }
     }
 }
