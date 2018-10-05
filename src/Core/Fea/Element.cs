@@ -67,7 +67,9 @@ namespace Core.Fea
 
         internal static float VonMises3D(float sx, float sy, float sz, float txy, float txz, float tyz)
         {
-            var stresses = (sx - sy) * (sx - sy) + (sx - sz) * (sx - sz) + (sy - sz) * (sy - sz);
+            var stresses = (sx - sy) * (sx - sy) +
+                           (sx - sz) * (sx - sz) + 
+                           (sy - sz) * (sy - sz);
             var vectors = txy * txy + txz * txz + tyz * tyz;
             return (float)(1.0 / Math.Sqrt(2.0) * Math.Sqrt(stresses + 6.0 * vectors));
         }

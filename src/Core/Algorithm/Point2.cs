@@ -25,7 +25,8 @@ namespace Core.Algorithm
 
         public override bool Equals(object obj)
         {
-            if (!(obj is Point2)) return false;
+            if (!(obj is Point2))
+                return false;
             Point2 other = (Point2)obj;
             return X == other.X && Y == other.Y;
         }

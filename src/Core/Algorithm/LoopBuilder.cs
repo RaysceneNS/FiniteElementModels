@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Core.Algorithm
 {
     /// <summary>
-    /// Welds the geometric primitives line segment and arc into a continuous polyshape
+    /// Welds the geometric primitives line segment and arc into a continuous poly shape
     /// This class is mainly used to provide input geometry to the other methods
     /// </summary>
     public class LoopBuilder
@@ -23,7 +23,7 @@ namespace Core.Algorithm
         /// </summary>
         /// <param name="points">The points.</param>
         /// <returns></returns>
-        private static float CalculatePsuedoArea(List<Point2> points)
+        private static float CalculatePseudoArea(List<Point2> points)
         {
             if (points == null)
                 throw new ArgumentNullException(nameof(points));
@@ -158,7 +158,7 @@ namespace Core.Algorithm
             points.Add(points[0]);
 
             // determine whether this shape is wound clockwise or counter-clockwise
-            var area = CalculatePsuedoArea(points);
+            var area = CalculatePseudoArea(points);
             if (area < 0f && clockwise || area > 0f && !clockwise)
                 points.Reverse();
 

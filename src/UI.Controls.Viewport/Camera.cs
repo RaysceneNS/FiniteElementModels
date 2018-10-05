@@ -8,10 +8,9 @@ namespace UI.Controls.Viewport
         private const float NEAR = 10f;
         private const float FAR = 500f;
 
-        private int ViewportWidth { get; set; }
-        private int ViewportHeight { get; set; }
-        private float ModelDistance { get; }
-
+        private int _viewportWidth;
+        private int _viewportHeight;
+        private readonly float _modelDistance;
         private float _modelX, _modelY, _modelZ;
         private float _modelExtent;
         private float _panPositionX, _panPositionY;
@@ -19,15 +18,15 @@ namespace UI.Controls.Viewport
 
         internal Camera()
         {
-            ModelDistance = 100f;
+            _modelDistance = 100f;
         }
 
         internal void Reset()
         {
-            _panPositionX = ViewportWidth / 2f;
-            _panPositionY = ViewportHeight / 2f;
-            _zoomWidth = ViewportWidth;
-            _zoomHeight = ViewportHeight;
+            _panPositionX = _viewportWidth / 2f;
+            _panPositionY = _viewportHeight / 2f;
+            _zoomWidth = _viewportWidth;
+            _zoomHeight = _viewportHeight;
         }
 
         internal void ResizeViewport(int width, int height)
@@ -39,16 +38,16 @@ namespace UI.Controls.Viewport
             Gl.glViewport(0, 0, width, height);
 
             // if the viewport is being resized then try to maintain a good approximation of our pan and zoom against the new window dimensions
-            if (ViewportHeight != 0 && ViewportWidth != 0)
+            if (_viewportHeight != 0 && _viewportWidth != 0)
             {
                 float zoomWidth, zoomHeight;
 
                 // construct a new zoom window that will give the appearance of being the same relative zoom and pan
-                if (_zoomWidth / ViewportWidth < _zoomHeight / ViewportHeight)
+                if (_zoomWidth / _viewportWidth < _zoomHeight / _viewportHeight)
                 {
                     //constrain the minimum and maximum zoom extents
                     zoomHeight = Clamp(0.0001f,
-                        _zoomWidth * (width / (float) ViewportWidth) * (height / (float) width), 10000f);
+                        _zoomWidth * (width / (float) _viewportWidth) * (height / (float) width), 10000f);
                     // maintain the aspect ratio of the viewport
                     zoomWidth = zoomHeight * (width / (float) height);
                 }
@@ -56,7 +55,7 @@ namespace UI.Controls.Viewport
                 {
                     //constrain the minimum and maximum zoom extents
                     zoomWidth = Clamp(0.0001f,
-                        _zoomHeight * (height / (float) ViewportHeight) * (width / (float) height), 10000f);
+                        _zoomHeight * (height / (float) _viewportHeight) * (width / (float) height), 10000f);
                     // maintain the aspect ratio of the viewport
                     zoomHeight = zoomWidth * (height / (float) width);
                 }
@@ -71,8 +70,8 @@ namespace UI.Controls.Viewport
             }
 
             // set the new dimensions, and consequently the aspect ratio and zoom factor.
-            ViewportWidth = width;
-            ViewportHeight = height;
+            _viewportWidth = width;
+            _viewportHeight = height;
         }
 
         /// <summary>
@@ -96,7 +95,7 @@ namespace UI.Controls.Viewport
         internal void Zoom(float amount)
         {
             var height = Clamp(0.0001f, _zoomHeight + amount * CurrentZoomFactor(), 10000f);
-            var width = height * (ViewportWidth / (float) ViewportHeight);
+            var width = height * (_viewportWidth / (float) _viewportHeight);
             _zoomWidth = width;
             _zoomHeight = height;
         }
@@ -108,15 +107,15 @@ namespace UI.Controls.Viewport
 
             var currentZoomFactor = CurrentZoomFactor();
             float height, width;
-            if (ViewportWidth / rectWidth < ViewportHeight / rectHeight)
+            if (_viewportWidth / rectWidth < _viewportHeight / rectHeight)
             {
-                height = Clamp(0.0001f, rectWidth * currentZoomFactor * (ViewportHeight / (float) ViewportWidth), 10000f);
-                width = height * (ViewportWidth / (float) ViewportHeight);
+                height = Clamp(0.0001f, rectWidth * currentZoomFactor * (_viewportHeight / (float) _viewportWidth), 10000f);
+                width = height * (_viewportWidth / (float) _viewportHeight);
             }
             else
             {
-                width = Clamp(0.0001f, rectHeight * currentZoomFactor * (ViewportWidth / (float) ViewportHeight), 10000f);
-                height = width * (ViewportHeight / (float) ViewportWidth);
+                width = Clamp(0.0001f, rectHeight * currentZoomFactor * (_viewportWidth / (float) _viewportHeight), 10000f);
+                height = width * (_viewportHeight / (float) _viewportWidth);
             }
 
             var zoomCenterX = _zoomWidth / 2f;
@@ -132,24 +131,24 @@ namespace UI.Controls.Viewport
         internal void TransformProjectionMatrix()
         {
             // set the zoom rect
-            int[] viewport = {0, 0, ViewportWidth, ViewportHeight};
+            int[] viewport = {0, 0, _viewportWidth, _viewportHeight};
             Glu.gluPickMatrix(_panPositionX, _panPositionY, _zoomWidth, _zoomHeight, viewport);
 
-            var aspectRatio = ViewportWidth / (float)ViewportHeight;
+            var aspectRatio = _viewportWidth / (float)_viewportHeight;
             Glu.gluPerspective(FIELD_OF_VIEW, aspectRatio, NEAR, FAR);
         }
 
         internal void TransformModelViewMatrix()
         {
-            Gl.glTranslatef(0f, 0f, -ModelDistance);
-            var scaleToModelDistance = ModelDistance / _modelExtent;
+            Gl.glTranslatef(0f, 0f, -_modelDistance);
+            var scaleToModelDistance = _modelDistance / _modelExtent;
             Gl.glScalef(scaleToModelDistance, scaleToModelDistance, scaleToModelDistance);
             Gl.glTranslatef(-_modelX, -_modelY, -_modelZ);
         }
 
         private float CurrentZoomFactor()
         {
-            return _zoomHeight / ViewportHeight;
+            return _zoomHeight / _viewportHeight;
         }
 
         private static float Clamp(float low, float val, float high)
