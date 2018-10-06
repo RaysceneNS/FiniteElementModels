@@ -7,19 +7,14 @@ namespace UI.Controls.Viewport
         private const float FIELD_OF_VIEW  = 60.0f;
         private const float NEAR = 10f;
         private const float FAR = 500f;
+        private const float MODEL_DISTANCE = 100f;
 
         private int _viewportWidth;
         private int _viewportHeight;
-        private readonly float _modelDistance;
         private float _modelX, _modelY, _modelZ;
         private float _modelExtent;
         private float _panPositionX, _panPositionY;
         private float _zoomWidth, _zoomHeight;
-
-        internal Camera()
-        {
-            _modelDistance = 100f;
-        }
 
         internal void Reset()
         {
@@ -140,8 +135,8 @@ namespace UI.Controls.Viewport
 
         internal void TransformModelViewMatrix()
         {
-            Gl.glTranslatef(0f, 0f, -_modelDistance);
-            var scaleToModelDistance = _modelDistance / _modelExtent;
+            Gl.glTranslatef(0f, 0f, -MODEL_DISTANCE);
+            var scaleToModelDistance = MODEL_DISTANCE / _modelExtent;
             Gl.glScalef(scaleToModelDistance, scaleToModelDistance, scaleToModelDistance);
             Gl.glTranslatef(-_modelX, -_modelY, -_modelZ);
         }

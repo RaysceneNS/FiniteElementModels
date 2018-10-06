@@ -21,6 +21,7 @@ namespace UI.Windows
 
             // Perform a triangulation within the boundaries of the shape
             var model = meshBuilder.TriangulateIteratively(progressReport);
+            System.Diagnostics.Trace.WriteLine($"Min element quality{meshBuilder.MinElementQuality}");
 
             // apply Displacements and loads to the nodes of the model
             foreach (var node in model.Nodes)

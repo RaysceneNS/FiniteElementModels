@@ -196,6 +196,11 @@ namespace Core.Algorithm
             return arc.GetPoints(elementSize, revert);
         }
 
+        private static float ToRadians(float degrees)
+        {
+            return (float)(degrees * Math.PI / 180.0);
+        }
+
         private struct Arc2
         {
             private readonly float _endAngle, _startAngle;
@@ -277,17 +282,7 @@ namespace Core.Algorithm
                 return points;
             }
         }
-
-        /// <summary>
-        ///     Convert degrees to radians
-        /// </summary>
-        /// <param name="angle">The angle.</param>
-        /// <returns></returns>
-        private static float ToRadians(float angle)
-        {
-            return (float)(angle * Math.PI / 180.0);
-        }
-
+        
         private struct LineSegment2
         {
             public LineSegment2(float x1, float y1, float x2, float y2)

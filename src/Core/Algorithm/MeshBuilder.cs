@@ -176,7 +176,7 @@ namespace Core.Algorithm
                 var p3Y = p3.Y;
 
                 var newPoint = new Point2((p1X + p2X + p3X) / 3f, (p1Y + p2Y + p3Y) / 3f);
-                if (!InsidePolygons(newPoint, _loops))
+                if (!InsidePolygons(_loops, newPoint))
                     _faces.Remove(face);
             }
         }
@@ -242,7 +242,7 @@ namespace Core.Algorithm
         /// <summary>
         /// tests each point in the lines of lists of points to see if point is within
         /// </summary>
-        private static bool InsidePolygons(Point2 p, IEnumerable<List<Point2>> pointList)
+        internal static bool InsidePolygons(IEnumerable<IList<Point2>> pointList, Point2 p)
         {
             // must test every polygon to see if all inside polygon calls add to one.
             var count = 0;
@@ -260,7 +260,7 @@ namespace Core.Algorithm
         /// <param name="pTest">The p test.</param>
         /// <param name="polygon">The polygon.</param>
         /// <returns></returns>
-        private static int InsidePolygon(Point2 pTest, List<Point2> polygon)
+        private static int InsidePolygon(Point2 pTest, IList<Point2> polygon)
         {
             if (polygon == null)
                 throw new ArgumentNullException(nameof(polygon));
